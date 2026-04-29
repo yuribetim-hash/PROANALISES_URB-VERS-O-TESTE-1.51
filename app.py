@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# CSS personalizado para fundo azul ergonômico
+# CSS personalizado para fundo azul ergonômico com melhor contraste
 st.markdown("""
 <style>
     /* Fundo principal da aplicação */
@@ -45,6 +45,15 @@ st.markdown("""
         color: white !important;
     }
     
+    [data-testid="stSidebar"] .stTextInput input {
+        background-color: #2c5a7a !important;
+        color: white !important;
+    }
+    
+    [data-testid="stSidebar"] .stTextInput label {
+        color: white !important;
+    }
+    
     /* Cards de inconformidades - corrigindo contraste */
     .card {
         padding: 0.8rem 1rem;
@@ -59,7 +68,66 @@ st.markdown("""
         color: #1a5276 !important;
     }
     
-    /* Status badges */
+    /* CORREÇÃO DE CONTRASTE PARA CAMPOS DE INPUT */
+    /* Labels de campos */
+    .stTextInput label, .stSelectbox label, .stTextArea label, .stNumberInput label {
+        color: #1a5276 !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+    }
+    
+    /* Inputs de texto */
+    .stTextInput input {
+        background-color: white !important;
+        color: #1a1a1a !important;
+        border: 1px solid #c5d5e6 !important;
+        border-radius: 6px !important;
+        font-size: 14px !important;
+        font-weight: normal !important;
+    }
+    
+    .stTextInput input:focus {
+        border-color: #1a5276 !important;
+        box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
+    }
+    
+    /* Textareas */
+    .stTextArea textarea {
+        background-color: white !important;
+        color: #1a1a1a !important;
+        border: 1px solid #c5d5e6 !important;
+        border-radius: 6px !important;
+        font-size: 14px !important;
+    }
+    
+    .stTextArea textarea:focus {
+        border-color: #1a5276 !important;
+        box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
+    }
+    
+    /* Number inputs */
+    .stNumberInput input {
+        background-color: white !important;
+        color: #1a1a1a !important;
+        border: 1px solid #c5d5e6 !important;
+        border-radius: 6px !important;
+    }
+    
+    /* Select boxes */
+    .stSelectbox select {
+        background-color: white !important;
+        color: #1a1a1a !important;
+        border: 1px solid #c5d5e6 !important;
+        border-radius: 6px !important;
+    }
+    
+    /* Placeholder text */
+    ::placeholder {
+        color: #888888 !important;
+        opacity: 1 !important;
+    }
+    
+    /* Texto dentro dos cards de status */
     .status-badge {
         padding: 8px 12px;
         border-radius: 6px;
@@ -98,16 +166,30 @@ st.markdown("""
         border-radius: 8px;
         font-weight: 600;
         transition: all 0.3s ease;
+        background-color: #1a5276 !important;
+        color: white !important;
+        border: none !important;
     }
     
     .stButton > button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        background-color: #2c6b96 !important;
+    }
+    
+    /* Botão primary */
+    .stButton > button[kind="primary"] {
+        background-color: #0d6e2e !important;
+    }
+    
+    .stButton > button[kind="primary"]:hover {
+        background-color: #0f8a3a !important;
     }
     
     /* Headers */
     h1, h2, h3, h4 {
         color: #1a5276 !important;
+        font-weight: 600 !important;
     }
     
     /* Textos em geral */
@@ -115,16 +197,54 @@ st.markdown("""
         color: #2c3e50 !important;
     }
     
-    /* Inputs e textareas */
-    input, textarea, select {
-        background-color: white !important;
-        border: 1px solid #c5d5e6 !important;
-        border-radius: 6px !important;
-    }
-    
     /* Informações e avisos */
     .stInfo, .stSuccess, .stWarning, .stError {
         border-radius: 8px !important;
+    }
+    
+    /* Métricas */
+    [data-testid="stMetric"] {
+        background-color: #f8fafd;
+        border-radius: 8px;
+        padding: 10px;
+        border: 1px solid #c5d5e6;
+    }
+    
+    [data-testid="stMetric"] label {
+        color: #1a5276 !important;
+        font-weight: 600 !important;
+    }
+    
+    [data-testid="stMetric"] .stMetricValue {
+        color: #1a1a1a !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Expanders */
+    .streamlit-expanderHeader {
+        background-color: #f0f4f8 !important;
+        color: #1a5276 !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+    }
+    
+    .streamlit-expanderContent {
+        background-color: white !important;
+        border-radius: 0 0 8px 8px !important;
+    }
+    
+    /* Divider */
+    hr {
+        border-color: #c5d5e6 !important;
+    }
+    
+    /* Download button */
+    .stDownloadButton button {
+        background-color: #0d6e2e !important;
+    }
+    
+    .stDownloadButton button:hover {
+        background-color: #0f8a3a !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -151,7 +271,7 @@ def carregar_usuarios(caminho="usuarios.txt"):
 
 
 def tela_login():
-    st.title("Proanalisis v1.3")
+    st.title("📐 Proanalisis v1.3")
     st.caption("Sistema de análise urbanística e geração de parecer técnico")
 
     col1, col2, col3 = st.columns([1, 1.2, 1])
@@ -362,7 +482,7 @@ def montar_inconformidades_por_grupo(respostas, observacoes, pendencias_manuais=
     if pendencias_manuais:
         for grupo, pendencia in pendencias_manuais.items():
             if pendencia and pendencia.strip():
-                grupos.setdefault(grupo, []).append(f"PENDÊNCIA DIVERSA: {pendencia}")
+                grupos.setdefault(grupo, []).append(f"INCONFORMIDADE DIVERSA: {pendencia}")
 
     return grupos
 
@@ -641,7 +761,7 @@ elif st.session_state["etapa"] == "2. Analista":
                 st.rerun()
 
 # -------------------------
-# ETAPA 3 (VERSÃO CORRIGIDA COM STATUS VISUAL E PENDÊNCIAS DIVERSAS)
+# ETAPA 3
 # -------------------------
 elif st.session_state["etapa"] == "3. Análise":
     st.header("🔍 Análise técnica")
@@ -741,7 +861,7 @@ elif st.session_state["etapa"] == "3. Análise":
                 
                 st.markdown("---")  # Separador entre perguntas
             
-            # Campo para pendências diversas no final de cada grupo
+            # Campo para inconformidades diversas no final de cada grupo
             st.markdown("### 📝 Inconformidades Diversas")
             st.caption("Registre aqui quaisquer inconformidades adicionais não cobertas pelas perguntas acima")
             
@@ -792,7 +912,7 @@ elif st.session_state["etapa"] == "3. Análise":
             st.rerun()
 
 # -------------------------
-# ETAPA 4 (CORRIGIDA - CARDS COM CONTRASTE)
+# ETAPA 4
 # -------------------------
 elif st.session_state["etapa"] == "4. Revisão":
     st.header("📋 Revisão da análise")
@@ -896,7 +1016,7 @@ elif st.session_state["etapa"] == "4. Revisão":
             st.rerun()
 
 # -------------------------
-# ETAPA 5 (SEM ANIMAÇÃO)
+# ETAPA 5
 # -------------------------
 elif st.session_state["etapa"] == "5. Gerar parecer":
     st.header("📄 Geração do parecer")
@@ -978,7 +1098,7 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
             st.session_state["etapa"] = "4. Revisão"
             st.rerun()
     with col2:
-        # Botão de geração com validação completa (sem animação de balloons)
+        # Botão de geração com validação completa (sem animação)
         if st.button("📄 Gerar Parecer Técnico", use_container_width=True, type="primary"):
             # Validações rigorosas
             if not dados["protocolo"]:
