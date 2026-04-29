@@ -123,7 +123,7 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
     }
     
-        /* CORREÇÃO DO HOVER PARA O DROPDOWN - FUNDO AZUL E FONTE BRANCA */
+    /* CORREÇÃO DO HOVER PARA O DROPDOWN - FUNDO AZUL E FONTE BRANCA */
     div[data-baseweb="popover"] {
         background-color: white !important;
         border: 1px solid #c5d5e6 !important;
@@ -961,11 +961,10 @@ elif st.session_state["etapa"] == "3. Análise":
                 
                 st.markdown("---")
             
-            # Campo para inconformidades diversas com botão para adicionar múltiplas
+            # Campo para inconformidades diversas
             st.markdown("### 📝 Inconformidades Diversas")
             st.caption("Registre aqui quaisquer inconformidades adicionais não cobertas pelas perguntas acima")
             
-            # Inicializar lista de pendências para este grupo se não existir
             if grupo not in pendencias_manuais:
                 pendencias_manuais[grupo] = []
             elif not isinstance(pendencias_manuais[grupo], list):
@@ -974,7 +973,6 @@ elif st.session_state["etapa"] == "3. Análise":
                 else:
                     pendencias_manuais[grupo] = []
             
-            # Exibir inconformidades existentes
             if pendencias_manuais[grupo]:
                 for i, pendencia in enumerate(pendencias_manuais[grupo]):
                     if pendencia and pendencia.strip():
@@ -990,12 +988,10 @@ elif st.session_state["etapa"] == "3. Análise":
                                 pendencias_manuais[grupo].pop(i)
                                 st.rerun()
             
-            # Botão para adicionar nova inconformidade
             if st.button(f"+ Adicionar Inconformidade Diversa", key=f"add_{grupo}", use_container_width=True):
                 pendencias_manuais[grupo].append("")
                 st.rerun()
             
-            # Novo campo para adicionar inconformidade
             if pendencias_manuais[grupo] and not pendencias_manuais[grupo][-1]:
                 nova_pendencia = st.text_area(
                     f"Nova inconformidade para o grupo: {grupo}",
@@ -1017,7 +1013,6 @@ elif st.session_state["etapa"] == "3. Análise":
                 if nova_pendencia != ultima:
                     pendencias_manuais[grupo][-1] = nova_pendencia
             
-            # Contar inconformidades para o sidebar
             for pendencia in pendencias_manuais[grupo]:
                 if pendencia and pendencia.strip():
                     inconformes_sidebar.append(f"{grupo} - Inconformidade Diversa")
