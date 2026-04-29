@@ -123,53 +123,65 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
     }
     
-    /* CORREÇÃO PARA O DROPDOWN DAS CAIXAS DE SELEÇÃO */
-    div[data-baseweb="select"] > div {
-        background-color: white !important;
-        color: #1a1a1a !important;
-    }
-    
-    [data-testid="stSelectbox"] div[role="listbox"] {
+    /* CORREÇÃO COMPLETA PARA O DROPDOWN (MENU SUSPENSO) DAS CAIXAS DE SELEÇÃO */
+    div[data-baseweb="popover"] {
         background-color: white !important;
         border: 1px solid #c5d5e6 !important;
-        border-radius: 6px !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
     }
     
-    [data-testid="stSelectbox"] div[role="option"] {
+    div[data-baseweb="menu"] {
+        background-color: white !important;
+        border-radius: 8px !important;
+        padding: 4px 0 !important;
+    }
+    
+    div[data-baseweb="menu"] li {
         background-color: white !important;
         color: #1a1a1a !important;
-        padding: 8px 12px !important;
+        padding: 8px 16px !important;
         font-size: 14px !important;
+        cursor: pointer !important;
     }
     
-    [data-testid="stSelectbox"] div[role="option"]:hover {
+    div[data-baseweb="menu"] li:hover {
         background-color: #e8f0fe !important;
         color: #1a5276 !important;
     }
     
-    [data-testid="stSelectbox"] div[role="option"][aria-selected="true"] {
+    div[data-baseweb="menu"] li[aria-selected="true"] {
         background-color: #1a5276 !important;
         color: white !important;
     }
     
-    .stSelectbox [data-baseweb="select"] input {
+    div[data-baseweb="menu"] li:focus,
+    div[data-baseweb="menu"] li[data-highlighted="true"] {
+        background-color: #d4e4fc !important;
+        color: #1a5276 !important;
+        outline: none !important;
+    }
+    
+    div[data-baseweb="menu"]::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    div[data-baseweb="menu"]::-webkit-scrollbar-track {
+        background: #f0f0f0;
+        border-radius: 4px;
+    }
+    
+    div[data-baseweb="menu"]::-webkit-scrollbar-thumb {
+        background: #c5d5e6;
+        border-radius: 4px;
+    }
+    
+    div[data-baseweb="menu"]::-webkit-scrollbar-thumb:hover {
+        background: #1a5276;
+    }
+    
+    .stSelectbox div[data-baseweb="select"] {
         background-color: white !important;
-        color: #1a1a1a !important;
-        border: 1px solid #c5d5e6 !important;
-        border-radius: 6px !important;
-    }
-    
-    .stSelectbox [data-baseweb="select"] div[class*="placeholder"] {
-        color: #888888 !important;
-    }
-    
-    .stSelectbox [data-baseweb="select"] [data-testid="stMarkdownContainer"] {
-        background-color: transparent !important;
-    }
-    
-    .stSelectbox [data-baseweb="select"] span {
-        color: #1a1a1a !important;
     }
     
     ::placeholder {
@@ -261,6 +273,38 @@ st.markdown("""
     .stDownloadButton button:hover {
         background-color: #0f8a3a !important;
         color: white !important;
+    }
+    
+    /* Botão pequeno para adicionar inconformidade */
+    .small-button button {
+        padding: 4px 12px !important;
+        font-size: 12px !important;
+        background-color: #28a745 !important;
+    }
+    
+    .small-button button:hover {
+        background-color: #34ce57 !important;
+    }
+    
+    .remove-button button {
+        background-color: #dc3545 !important;
+        padding: 2px 8px !important;
+        font-size: 12px !important;
+    }
+    
+    .remove-button button:hover {
+        background-color: #c82333 !important;
+    }
+    
+    .inconformidade-item {
+        background-color: #fff3e0;
+        border-left: 4px solid #ff9800;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     
     h1, h2, h3, h4 {
@@ -512,8 +556,12 @@ def definir_conclusao(respostas, pendencias_manuais=None):
             return "DESFAVORÁVEL"
     
     if pendencias_manuais:
-        for grupo, pendencia in pendencias_manuais.items():
-            if pendencia and pendencia.strip():
+        for grupo, pendencias in pendencias_manuais.items():
+            if pendencias and isinstance(pendencias, list):
+                for pendencia in pendencias:
+                    if pendencia and pendencia.strip():
+                        return "DESFAVORÁVEL"
+            elif pendencias and pendencias.strip():
                 return "DESFAVORÁVEL"
     
     return "FAVORÁVEL"
@@ -538,9 +586,13 @@ def montar_inconformidades_por_grupo(respostas, observacoes, pendencias_manuais=
             grupos.setdefault(grupo, []).append(texto)
     
     if pendencias_manuais:
-        for grupo, pendencia in pendencias_manuais.items():
-            if pendencia and pendencia.strip():
-                grupos.setdefault(grupo, []).append(f"INCONFORMIDADE DIVERSA: {pendencia}")
+        for grupo, pendencias in pendencias_manuais.items():
+            if isinstance(pendencias, list):
+                for pendencia in pendencias:
+                    if pendencia and pendencia.strip():
+                        grupos.setdefault(grupo, []).append(f"INCONFORMIDADE DIVERSA: {pendencia}")
+            elif pendencias and pendencias.strip():
+                grupos.setdefault(grupo, []).append(f"INCONFORMIDADE DIVERSA: {pendencias}")
 
     return grupos
 
@@ -905,23 +957,68 @@ elif st.session_state["etapa"] == "3. Análise":
                 
                 st.markdown("---")
             
+            # Campo para inconformidades diversas com botão para adicionar múltiplas
             st.markdown("### 📝 Inconformidades Diversas")
             st.caption("Registre aqui quaisquer inconformidades adicionais não cobertas pelas perguntas acima")
             
-            chave_pendencia = f"pendencia_{grupo}"
-            valor_padrao_pendencia = pendencias_manuais.get(grupo, "")
+            # Inicializar lista de pendências para este grupo se não existir
+            if grupo not in pendencias_manuais:
+                pendencias_manuais[grupo] = []
+            elif not isinstance(pendencias_manuais[grupo], list):
+                # Converter para lista se for string (para compatibilidade)
+                if pendencias_manuais[grupo] and pendencias_manuais[grupo].strip():
+                    pendencias_manuais[grupo] = [pendencias_manuais[grupo]]
+                else:
+                    pendencias_manuais[grupo] = []
             
-            pendencia = st.text_area(
-                f"Inconformidades diversas para o grupo: {grupo}",
-                value=valor_padrao_pendencia,
-                key=chave_pendencia,
-                height=80,
-                placeholder="Ex: Documentação incompleta, falta de assinatura, necessidade de complementação de informações..."
-            )
-            pendencias_manuais[grupo] = pendencia
+            # Exibir inconformidades existentes
+            if pendencias_manuais[grupo]:
+                for i, pendencia in enumerate(pendencias_manuais[grupo]):
+                    if pendencia and pendencia.strip():
+                        col_pend, col_btn = st.columns([10, 1])
+                        with col_pend:
+                            st.markdown(f"""
+                            <div class='inconformidade-item' style='background-color:#fff3e0; border-left:4px solid #ff9800; padding:10px; margin:5px 0; border-radius:5px;'>
+                                <strong>Inconformidade {i+1}:</strong> {pendencia}
+                            </div>
+                            """, unsafe_allow_html=True)
+                        with col_btn:
+                            if st.button("🗑️", key=f"remove_{grupo}_{i}", help="Remover esta inconformidade"):
+                                pendencias_manuais[grupo].pop(i)
+                                st.rerun()
             
-            if pendencia and pendencia.strip():
-                inconformes_sidebar.append(f"{grupo} - Inconformidade Diversa")
+            # Botão para adicionar nova inconformidade
+            if st.button(f"+ Adicionar Inconformidade Diversa", key=f"add_{grupo}", use_container_width=True):
+                pendencias_manuais[grupo].append("")
+                st.rerun()
+            
+            # Novo campo para adicionar inconformidade
+            if pendencias_manuais[grupo] and not pendencias_manuais[grupo][-1]:
+                nova_pendencia = st.text_area(
+                    f"Nova inconformidade para o grupo: {grupo}",
+                    key=f"new_pendencia_{grupo}",
+                    height=80,
+                    placeholder="Descreva a inconformidade encontrada..."
+                )
+                if nova_pendencia and nova_pendencia.strip():
+                    pendencias_manuais[grupo][-1] = nova_pendencia
+                    st.rerun()
+            elif pendencias_manuais[grupo] and pendencias_manuais[grupo][-1]:
+                # Editar última inconformidade
+                ultima = pendencias_manuais[grupo][-1]
+                nova_pendencia = st.text_area(
+                    f"Editar inconformidade (última adicionada)",
+                    value=ultima,
+                    key=f"edit_pendencia_{grupo}",
+                    height=80
+                )
+                if nova_pendencia != ultima:
+                    pendencias_manuais[grupo][-1] = nova_pendencia
+            
+            # Contar inconformidades para o sidebar
+            for pendencia in pendencias_manuais[grupo]:
+                if pendencia and pendencia.strip():
+                    inconformes_sidebar.append(f"{grupo} - Inconformidade Diversa")
             
             st.markdown("---")
 
@@ -949,6 +1046,7 @@ elif st.session_state["etapa"] == "3. Análise":
         if st.button("Prosseguir para revisão →", use_container_width=True, type="primary"):
             st.session_state["respostas_temp"] = respostas
             st.session_state["observacoes_temp"] = observacoes
+            st.session_state["pendencias_manuais"] = pendencias_manuais
             st.session_state["etapa"] = "4. Revisão"
             st.rerun()
 
@@ -1107,11 +1205,23 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
         st.warning(f"⚠️ Atenção: {total - preenchidas} perguntas ainda estão pendentes. Revise antes de gerar o parecer.")
         st.info("💡 Você pode voltar para a etapa de Análise para responder as perguntas pendentes.")
     
-    pendencias_registradas = {k: v for k, v in pendencias_manuais.items() if v and v.strip()}
-    if pendencias_registradas:
-        st.warning("⚠️ Inconformidades diversas registradas:")
-        for grupo, pendencia in pendencias_registradas.items():
-            st.markdown(f"- **{grupo}:** {pendencia}")
+    # Contar inconformidades diversas
+    total_diversas = 0
+    for pendencias in pendencias_manuais.values():
+        if isinstance(pendencias, list):
+            total_diversas += len([p for p in pendencias if p and p.strip()])
+        elif pendencias and pendencias.strip():
+            total_diversas += 1
+    
+    if total_diversas > 0:
+        st.warning(f"⚠️ {total_diversas} inconformidade(s) diversa(s) registrada(s):")
+        for grupo, pendencias in pendencias_manuais.items():
+            if isinstance(pendencias, list):
+                for pendencia in pendencias:
+                    if pendencia and pendencia.strip():
+                        st.markdown(f"- **{grupo}:** {pendencia}")
+            elif pendencias and pendencias.strip():
+                st.markdown(f"- **{grupo}:** {pendencias}")
     
     col1, col2 = st.columns([1, 1])
     with col1:
