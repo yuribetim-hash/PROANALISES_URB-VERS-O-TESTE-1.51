@@ -54,7 +54,7 @@ st.markdown("""
         color: white !important;
     }
     
-    /* Cards de inconformidades - corrigindo contraste */
+    /* Cards de inconformidades */
     .card {
         padding: 0.8rem 1rem;
         border: 1px solid #c5d5e6;
@@ -69,21 +69,18 @@ st.markdown("""
     }
     
     /* CORREÇÃO DE CONTRASTE PARA CAMPOS DE INPUT */
-    /* Labels de campos */
     .stTextInput label, .stSelectbox label, .stTextArea label, .stNumberInput label {
         color: #1a5276 !important;
         font-weight: 600 !important;
         font-size: 14px !important;
     }
     
-    /* Inputs de texto */
     .stTextInput input {
         background-color: white !important;
         color: #1a1a1a !important;
         border: 1px solid #c5d5e6 !important;
         border-radius: 6px !important;
         font-size: 14px !important;
-        font-weight: normal !important;
     }
     
     .stTextInput input:focus {
@@ -91,7 +88,6 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
     }
     
-    /* Textareas */
     .stTextArea textarea {
         background-color: white !important;
         color: #1a1a1a !important;
@@ -105,7 +101,6 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
     }
     
-    /* Number inputs */
     .stNumberInput input {
         background-color: white !important;
         color: #1a1a1a !important;
@@ -113,7 +108,7 @@ st.markdown("""
         border-radius: 6px !important;
     }
     
-    /* Select boxes - corrigido para ter fundo branco e texto escuro */
+    /* Select boxes - fundo claro e texto escuro */
     .stSelectbox select {
         background-color: white !important;
         color: #1a1a1a !important;
@@ -128,13 +123,60 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
     }
     
-    /* Placeholder text */
+    /* CORREÇÃO PARA O DROPDOWN DAS CAIXAS DE SELEÇÃO */
+    div[data-baseweb="select"] > div {
+        background-color: white !important;
+        color: #1a1a1a !important;
+    }
+    
+    [data-testid="stSelectbox"] div[role="listbox"] {
+        background-color: white !important;
+        border: 1px solid #c5d5e6 !important;
+        border-radius: 6px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    }
+    
+    [data-testid="stSelectbox"] div[role="option"] {
+        background-color: white !important;
+        color: #1a1a1a !important;
+        padding: 8px 12px !important;
+        font-size: 14px !important;
+    }
+    
+    [data-testid="stSelectbox"] div[role="option"]:hover {
+        background-color: #e8f0fe !important;
+        color: #1a5276 !important;
+    }
+    
+    [data-testid="stSelectbox"] div[role="option"][aria-selected="true"] {
+        background-color: #1a5276 !important;
+        color: white !important;
+    }
+    
+    .stSelectbox [data-baseweb="select"] input {
+        background-color: white !important;
+        color: #1a1a1a !important;
+        border: 1px solid #c5d5e6 !important;
+        border-radius: 6px !important;
+    }
+    
+    .stSelectbox [data-baseweb="select"] div[class*="placeholder"] {
+        color: #888888 !important;
+    }
+    
+    .stSelectbox [data-baseweb="select"] [data-testid="stMarkdownContainer"] {
+        background-color: transparent !important;
+    }
+    
+    .stSelectbox [data-baseweb="select"] span {
+        color: #1a1a1a !important;
+    }
+    
     ::placeholder {
         color: #888888 !important;
         opacity: 1 !important;
     }
     
-    /* Texto dentro dos cards de status */
     .status-badge {
         padding: 8px 12px;
         border-radius: 6px;
@@ -152,7 +194,6 @@ st.markdown("""
         font-size: 0.85rem;
     }
     
-    /* Progress bar */
     .progress-wrap {
         width: 100%;
         background: #e9ecef;
@@ -168,8 +209,7 @@ st.markdown("""
         transition: width 0.3s ease;
     }
     
-    /* BOTÕES CORRIGIDOS - FONTE BRANCA */
-    /* Todos os botões */
+    /* BOTÕES - FONTE BRANCA */
     .stButton > button {
         border-radius: 8px !important;
         font-weight: 600 !important;
@@ -179,7 +219,6 @@ st.markdown("""
         font-size: 14px !important;
     }
     
-    /* Botão primary (Prosseguir, Gerar, etc) - verde */
     .stButton > button[kind="primary"] {
         background-color: #0d6e2e !important;
         color: white !important;
@@ -192,7 +231,6 @@ st.markdown("""
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     
-    /* Botão secundário (Voltar, Sair, etc) - cinza/azul */
     .stButton > button:not([kind="primary"]) {
         background-color: #1a5276 !important;
         color: white !important;
@@ -205,39 +243,39 @@ st.markdown("""
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     
-    /* Botões desabilitados */
     .stButton > button:disabled {
         background-color: #cccccc !important;
         color: #666666 !important;
         cursor: not-allowed !important;
     }
     
-    /* Garantia extra para todos os botões */
-    button {
+    button, button p {
         color: white !important;
     }
     
-    button p {
+    .stDownloadButton button {
+        background-color: #0d6e2e !important;
         color: white !important;
     }
     
-    /* Headers */
+    .stDownloadButton button:hover {
+        background-color: #0f8a3a !important;
+        color: white !important;
+    }
+    
     h1, h2, h3, h4 {
         color: #1a5276 !important;
         font-weight: 600 !important;
     }
     
-    /* Textos em geral */
     p, li, .stMarkdown, .stText {
         color: #2c3e50 !important;
     }
     
-    /* Informações e avisos */
     .stInfo, .stSuccess, .stWarning, .stError {
         border-radius: 8px !important;
     }
     
-    /* Métricas */
     [data-testid="stMetric"] {
         background-color: #f8fafd;
         border-radius: 8px;
@@ -255,7 +293,6 @@ st.markdown("""
         font-weight: 700 !important;
     }
     
-    /* Expanders */
     .streamlit-expanderHeader {
         background-color: #f0f4f8 !important;
         color: #1a5276 !important;
@@ -268,20 +305,8 @@ st.markdown("""
         border-radius: 0 0 8px 8px !important;
     }
     
-    /* Divider */
     hr {
         border-color: #c5d5e6 !important;
-    }
-    
-    /* Download button */
-    .stDownloadButton button {
-        background-color: #0d6e2e !important;
-        color: white !important;
-    }
-    
-    .stDownloadButton button:hover {
-        background-color: #0f8a3a !important;
-        color: white !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -478,7 +503,6 @@ def resposta_preenchida(valor):
     return valor not in ("", None, "Selecione...")
 
 def definir_conclusao(respostas, pendencias_manuais=None):
-    # Verifica inconformidades das perguntas
     for p in perguntas:
         resposta = respostas.get(p["id"])
         if not resposta_preenchida(resposta):
@@ -487,7 +511,6 @@ def definir_conclusao(respostas, pendencias_manuais=None):
         if resposta not in conformes and resposta in p.get("regras", {}):
             return "DESFAVORÁVEL"
     
-    # Verifica pendências diversas (manuais)
     if pendencias_manuais:
         for grupo, pendencia in pendencias_manuais.items():
             if pendencia and pendencia.strip():
@@ -499,7 +522,6 @@ def definir_conclusao(respostas, pendencias_manuais=None):
 def montar_inconformidades_por_grupo(respostas, observacoes, pendencias_manuais=None):
     grupos = {}
 
-    # Inconformidades das perguntas
     for p in perguntas:
         pid = p["id"]
         resp = respostas.get(pid)
@@ -515,7 +537,6 @@ def montar_inconformidades_por_grupo(respostas, observacoes, pendencias_manuais=
                 texto += f"\nObservação: {obs}"
             grupos.setdefault(grupo, []).append(texto)
     
-    # Pendências diversas
     if pendencias_manuais:
         for grupo, pendencia in pendencias_manuais.items():
             if pendencia and pendencia.strip():
@@ -552,7 +573,6 @@ def gerar_docx(dados, respostas, observacoes, conclusao, analista, matricula, se
     doc = DocxTemplate("modelo_parecer.docx")
     inconformidades_rt = montar_inconformidades_rt(respostas, observacoes, pendencias_manuais)
 
-    # Formatar matrícula(s)
     matriculas_str = dados.get("matriculas", "")
     if isinstance(matriculas_str, list):
         matriculas_str = ", ".join(matriculas_str)
@@ -621,14 +641,12 @@ def render_progresso(preenchidas, total, pct, destino):
     destino.markdown(html, unsafe_allow_html=True)
 
 def inicializar_estados():
-    """Inicializa todos os estados necessários"""
     if "dados_antigos" not in st.session_state:
         st.session_state["dados_antigos"] = None
     
     if "etapa" not in st.session_state:
         st.session_state["etapa"] = "1. Protocolo"
     
-    # Campos base
     if "protocolo" not in st.session_state:
         st.session_state["protocolo"] = ""
     if "tipo" not in st.session_state:
@@ -669,7 +687,6 @@ etapas = [
     "5. Gerar parecer"
 ]
 
-# Mostrar etapa atual com indicador
 etapa_atual = st.sidebar.radio("📋 Etapas", etapas, index=etapas.index(st.session_state["etapa"]))
 if etapa_atual != st.session_state["etapa"]:
     st.session_state["etapa"] = etapa_atual
@@ -705,7 +722,6 @@ if st.session_state["etapa"] == "1. Protocolo":
     n_lotes = st.number_input("Número de Lotes", min_value=1, value=st.session_state["n_lotes"], key="n_lotes_input")
     st.session_state["n_lotes"] = n_lotes
     
-    # Campo para matrícula(s) do empreendimento
     matriculas = st.text_area(
         "Matrícula(s) do Empreendimento",
         value=st.session_state["matriculas"],
@@ -717,7 +733,6 @@ if st.session_state["etapa"] == "1. Protocolo":
 
     st.markdown("---")
     
-    # Botão de prosseguir no final
     if st.session_state["protocolo"]:
         ultima = carregar_ultima_analise(st.session_state["protocolo"])
         if ultima:
@@ -750,8 +765,6 @@ if st.session_state["etapa"] == "1. Protocolo":
                     st.rerun()
     else:
         st.warning("⚠️ Informe o número do protocolo para continuar.")
-        if st.button("Prosseguir →", use_container_width=True, type="primary", disabled=True):
-            pass
 
 # -------------------------
 # ETAPA 2
@@ -759,7 +772,6 @@ if st.session_state["etapa"] == "1. Protocolo":
 elif st.session_state["etapa"] == "2. Analista":
     st.header("👤 Dados do analista")
     
-    # Exibir resumo do protocolo atual
     st.info(f"📌 Protocolo: **{st.session_state['protocolo']}** | Empreendimento: **{st.session_state['interessado']}**")
 
     c1, c2 = st.columns(2)
@@ -788,7 +800,6 @@ elif st.session_state["etapa"] == "2. Analista":
             st.rerun()
     with col2:
         if st.button("Prosseguir →", use_container_width=True, type="primary"):
-            # Validar campos obrigatórios
             if not st.session_state["analista"]:
                 st.error("⚠️ Por favor, informe o nome do analista.")
             elif not st.session_state["n_analise"]:
@@ -803,7 +814,6 @@ elif st.session_state["etapa"] == "2. Analista":
 elif st.session_state["etapa"] == "3. Análise":
     st.header("🔍 Análise técnica")
     
-    # Exibir resumo do protocolo e analista
     st.info(f"📌 Protocolo: **{st.session_state['protocolo']}** | Analista: **{st.session_state['analista']}** | Análise Nº: **{st.session_state['n_analise']}**")
 
     respostas = {}
@@ -840,7 +850,6 @@ elif st.session_state["etapa"] == "3. Análise":
 
                 indice_padrao = opcoes_exibicao.index(st.session_state[chave_resp]) if st.session_state[chave_resp] in opcoes_exibicao else 0
 
-                # Layout: pergunta + status lado a lado
                 col_pergunta, col_status = st.columns([3, 1])
                 
                 with col_pergunta:
@@ -853,7 +862,6 @@ elif st.session_state["etapa"] == "3. Análise":
                     )
                     respostas[pid] = resposta
                 
-                # Campo de observação abaixo
                 obs = st.text_area(
                     "📝 Observação (opcional)",
                     key=chave_obs,
@@ -862,7 +870,6 @@ elif st.session_state["etapa"] == "3. Análise":
                 )
                 observacoes[pid] = obs
 
-                # Determinar e exibir o status
                 status = resumo_status_pergunta(p, respostas[pid])
                 
                 with col_status:
@@ -888,7 +895,7 @@ elif st.session_state["etapa"] == "3. Análise":
                             <div class='status-text' style='color: #067647;'>CONFORME</div>
                         </div>
                         """, unsafe_allow_html=True)
-                    else:  # pendente
+                    else:
                         st.markdown("""
                         <div class='status-badge' style='background-color:#fffaeb; border-left: 4px solid #b54708;'>
                             <span class='status-icon'>⏳</span>
@@ -896,9 +903,8 @@ elif st.session_state["etapa"] == "3. Análise":
                         </div>
                         """, unsafe_allow_html=True)
                 
-                st.markdown("---")  # Separador entre perguntas
+                st.markdown("---")
             
-            # Campo para inconformidades diversas no final de cada grupo
             st.markdown("### 📝 Inconformidades Diversas")
             st.caption("Registre aqui quaisquer inconformidades adicionais não cobertas pelas perguntas acima")
             
@@ -919,7 +925,6 @@ elif st.session_state["etapa"] == "3. Análise":
             
             st.markdown("---")
 
-    # Salvar pendências diversas no session_state
     st.session_state["pendencias_manuais"] = pendencias_manuais
 
     preenchidas, total, pct = progresso_percentual(respostas)
@@ -942,7 +947,6 @@ elif st.session_state["etapa"] == "3. Análise":
             st.rerun()
     with col2:
         if st.button("Prosseguir para revisão →", use_container_width=True, type="primary"):
-            # Salvar respostas e observações no session_state para usar na revisão
             st.session_state["respostas_temp"] = respostas
             st.session_state["observacoes_temp"] = observacoes
             st.session_state["etapa"] = "4. Revisão"
@@ -954,12 +958,10 @@ elif st.session_state["etapa"] == "3. Análise":
 elif st.session_state["etapa"] == "4. Revisão":
     st.header("📋 Revisão da análise")
     
-    # Recuperar respostas e observações
     if "respostas_temp" in st.session_state:
         respostas = st.session_state["respostas_temp"]
         observacoes = st.session_state["observacoes_temp"]
     else:
-        # Fallback: tentar recuperar dos campos
         respostas = {}
         observacoes = {}
         for idx, p in enumerate(perguntas):
@@ -986,7 +988,6 @@ elif st.session_state["etapa"] == "4. Revisão":
         st.write(f"**Analista:** {st.session_state.get('analista', '')}")
         st.write(f"**Nº da análise:** {st.session_state.get('n_analise', '')}")
         
-        # Exibir conclusão com cor
         if conclusao == "FAVORÁVEL":
             st.success(f"✅ **Conclusão preliminar:** {conclusao}")
         else:
@@ -1004,16 +1005,8 @@ elif st.session_state["etapa"] == "4. Revisão":
         for grupo, itens in grupos_inconformes.items():
             st.markdown(f"#### {grupo}")
             for i, item in enumerate(itens, start=1):
-                # Card com contraste melhorado e fundo claro
                 st.markdown(f"""
-                <div style="
-                    background-color: #f8fafd;
-                    border: 1px solid #c5d5e6;
-                    border-radius: 10px;
-                    padding: 12px 16px;
-                    margin: 8px 0;
-                    color: #1a1a1a;
-                ">
+                <div style="background-color: #f8fafd; border: 1px solid #c5d5e6; border-radius: 10px; padding: 12px 16px; margin: 8px 0; color: #1a1a1a;">
                     <b style="color: #1a5276;">{i}.</b> 
                     <span style="color: #1a1a1a;">{item.replace(chr(10), '<br>')}</span>
                 </div>
@@ -1035,9 +1028,7 @@ elif st.session_state["etapa"] == "4. Revisão":
 
             if antiga != atual or obs_antiga != obs_atual:
                 houve_alteracao = True
-                st.warning(
-                    f"**{pid}:** resposta '{antiga}' → '{atual}' | observação '{obs_antiga}' → '{obs_atual}'"
-                )
+                st.warning(f"**{pid}:** resposta '{antiga}' → '{atual}' | observação '{obs_antiga}' → '{obs_atual}'")
 
         if not houve_alteracao:
             st.success("✅ Nenhuma alteração identificada em relação à análise carregada.")
@@ -1058,12 +1049,10 @@ elif st.session_state["etapa"] == "4. Revisão":
 elif st.session_state["etapa"] == "5. Gerar parecer":
     st.header("📄 Geração do parecer")
     
-    # Recuperar respostas e observações
     if "respostas_temp" in st.session_state:
         respostas = st.session_state["respostas_temp"]
         observacoes = st.session_state["observacoes_temp"]
     else:
-        # Fallback: tentar recuperar dos campos
         respostas = {}
         observacoes = {}
         for idx, p in enumerate(perguntas):
@@ -1086,7 +1075,6 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
 
     conclusao = definir_conclusao(respostas, pendencias_manuais)
 
-    # Display dos dados principais
     col1, col2 = st.columns(2)
     with col1:
         st.write(f"**📌 Protocolo:** {dados['protocolo']}")
@@ -1099,13 +1087,11 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
         st.write(f"**🔢 Matrícula Analista:** {st.session_state.get('matricula_analista', '')}")
         st.write(f"**🔍 Nº Análise:** {st.session_state.get('n_analise', '')}")
         
-    # Conclusão
     if conclusao == "FAVORÁVEL":
         st.success(f"✅ **Conclusão final:** {conclusao}")
     else:
         st.error(f"❌ **Conclusão final:** {conclusao}")
 
-    # Validar campos obrigatórios
     campos_invalidos = []
     if not dados["protocolo"]:
         campos_invalidos.append("Protocolo")
@@ -1117,12 +1103,10 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
     if campos_invalidos:
         st.error(f"⚠️ Campos obrigatórios pendentes: {', '.join(campos_invalidos)}")
     
-    # Verificar se todas as perguntas foram respondidas
     if preenchidas < total:
         st.warning(f"⚠️ Atenção: {total - preenchidas} perguntas ainda estão pendentes. Revise antes de gerar o parecer.")
         st.info("💡 Você pode voltar para a etapa de Análise para responder as perguntas pendentes.")
     
-    # Exibir pendências diversas
     pendencias_registradas = {k: v for k, v in pendencias_manuais.items() if v and v.strip()}
     if pendencias_registradas:
         st.warning("⚠️ Inconformidades diversas registradas:")
@@ -1135,9 +1119,7 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
             st.session_state["etapa"] = "4. Revisão"
             st.rerun()
     with col2:
-        # Botão de geração com validação completa
         if st.button("📄 Gerar Parecer Técnico", use_container_width=True, type="primary"):
-            # Validações rigorosas
             if not dados["protocolo"]:
                 st.error("❌ Protocolo não informado. Volte à etapa 1 e informe o número do protocolo.")
                 st.stop()
@@ -1150,7 +1132,6 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
                 st.error("❌ Número da análise não informado. Volte à etapa 2 e preencha o número da análise.")
                 st.stop()
             
-            # Verificar modelo do documento
             if not os.path.exists("modelo_parecer.docx"):
                 st.error("❌ Arquivo 'modelo_parecer.docx' não encontrado. Verifique se o arquivo está no diretório correto.")
                 st.stop()
