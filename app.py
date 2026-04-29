@@ -123,7 +123,7 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
     }
     
-    /* CORREÇÃO DO HOVER PARA O DROPDOWN - FUNDO AZUL E FONTE BRANCA */
+    /* CORREÇÃO COMPLETA DO DROPDOWN (CAIXA DE SELEÇÃO QUE ABRE) */
     div[data-baseweb="popover"] {
         background-color: white !important;
         border: 1px solid #c5d5e6 !important;
@@ -146,19 +146,19 @@ st.markdown("""
         cursor: pointer !important;
     }
     
-    /* HOVER - fundo azul escuro, texto BRANCO */
+    /* HOVER / MOUSE POR CIMA - fundo azul escuro, texto BRANCO */
     div[data-baseweb="menu"] li:hover {
         background-color: #1a5276 !important;
         color: white !important;
     }
     
-    /* Opção selecionada */
+    /* Opção selecionada atualmente */
     div[data-baseweb="menu"] li[aria-selected="true"] {
         background-color: #0d6e2e !important;
         color: white !important;
     }
     
-    /* Opção ativa/focada */
+    /* Opção focada (navegação por teclado) */
     div[data-baseweb="menu"] li:focus,
     div[data-baseweb="menu"] li[data-highlighted="true"] {
         background-color: #1a5276 !important;
@@ -166,7 +166,7 @@ st.markdown("""
         outline: none !important;
     }
     
-    /* Scrollbar do dropdown */
+    /* Scrollbar do dropdown para listas longas */
     div[data-baseweb="menu"]::-webkit-scrollbar {
         width: 8px;
     }
@@ -961,7 +961,6 @@ elif st.session_state["etapa"] == "3. Análise":
                 
                 st.markdown("---")
             
-            # Campo para inconformidades diversas
             st.markdown("### 📝 Inconformidades Diversas")
             st.caption("Registre aqui quaisquer inconformidades adicionais não cobertas pelas perguntas acima")
             
