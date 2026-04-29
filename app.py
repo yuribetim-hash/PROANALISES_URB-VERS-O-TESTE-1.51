@@ -139,7 +139,7 @@ st.markdown("""
     
     /* Opções normais - fundo branco, texto BRANCO */
 div[data-baseweb="menu"] li {
-    background-color: white !important;
+    background-color: #1a5276 !important;
     color: white !important;
     padding: 8px 16px !important;
     font-size: 14px !important;
