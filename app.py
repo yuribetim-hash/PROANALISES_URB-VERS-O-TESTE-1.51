@@ -123,7 +123,7 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
     }
     
-    /* CORREÇÃO DO HOVER PARA O DROPDOWN - FUNDO BRANCO E FONTE ESCURA */
+        /* CORREÇÃO DO HOVER PARA O DROPDOWN - FUNDO AZUL E FONTE BRANCA */
     div[data-baseweb="popover"] {
         background-color: white !important;
         border: 1px solid #c5d5e6 !important;
@@ -146,7 +146,7 @@ st.markdown("""
         cursor: pointer !important;
     }
     
-    /* HOVER - fundo azul claro, texto azul escuro (bem visível) */
+    /* HOVER - fundo azul escuro, texto BRANCO */
     div[data-baseweb="menu"] li:hover {
         background-color: #1a5276 !important;
         color: white !important;
