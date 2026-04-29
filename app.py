@@ -123,7 +123,7 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
     }
     
-    /* CORREÇÃO COMPLETA PARA O DROPDOWN (MENU SUSPENSO) DAS CAIXAS DE SELEÇÃO */
+    /* CORREÇÃO DO HOVER PARA O DROPDOWN - FUNDO BRANCO E FONTE ESCURA */
     div[data-baseweb="popover"] {
         background-color: white !important;
         border: 1px solid #c5d5e6 !important;
@@ -137,6 +137,7 @@ st.markdown("""
         padding: 4px 0 !important;
     }
     
+    /* Opções normais - fundo branco, texto escuro */
     div[data-baseweb="menu"] li {
         background-color: white !important;
         color: #1a1a1a !important;
@@ -145,23 +146,27 @@ st.markdown("""
         cursor: pointer !important;
     }
     
+    /* HOVER - fundo azul claro, texto azul escuro (bem visível) */
     div[data-baseweb="menu"] li:hover {
-        background-color: #e8f0fe !important;
-        color: #1a5276 !important;
-    }
-    
-    div[data-baseweb="menu"] li[aria-selected="true"] {
         background-color: #1a5276 !important;
         color: white !important;
     }
     
+    /* Opção selecionada */
+    div[data-baseweb="menu"] li[aria-selected="true"] {
+        background-color: #0d6e2e !important;
+        color: white !important;
+    }
+    
+    /* Opção ativa/focada */
     div[data-baseweb="menu"] li:focus,
     div[data-baseweb="menu"] li[data-highlighted="true"] {
-        background-color: #d4e4fc !important;
-        color: #1a5276 !important;
+        background-color: #1a5276 !important;
+        color: white !important;
         outline: none !important;
     }
     
+    /* Scrollbar do dropdown */
     div[data-baseweb="menu"]::-webkit-scrollbar {
         width: 8px;
     }
@@ -275,7 +280,6 @@ st.markdown("""
         color: white !important;
     }
     
-    /* Botão pequeno para adicionar inconformidade */
     .small-button button {
         padding: 4px 12px !important;
         font-size: 12px !important;
@@ -557,7 +561,7 @@ def definir_conclusao(respostas, pendencias_manuais=None):
     
     if pendencias_manuais:
         for grupo, pendencias in pendencias_manuais.items():
-            if pendencias and isinstance(pendencias, list):
+            if isinstance(pendencias, list):
                 for pendencia in pendencias:
                     if pendencia and pendencia.strip():
                         return "DESFAVORÁVEL"
@@ -590,9 +594,9 @@ def montar_inconformidades_por_grupo(respostas, observacoes, pendencias_manuais=
             if isinstance(pendencias, list):
                 for pendencia in pendencias:
                     if pendencia and pendencia.strip():
-                        grupos.setdefault(grupo, []).append(f"INCONFORMIDADE DIVERSA: {pendencia}")
+                        grupos.setdefault(grupo, []).append(pendencia)
             elif pendencias and pendencias.strip():
-                grupos.setdefault(grupo, []).append(f"INCONFORMIDADE DIVERSA: {pendencias}")
+                grupos.setdefault(grupo, []).append(pendencias)
 
     return grupos
 
@@ -965,7 +969,6 @@ elif st.session_state["etapa"] == "3. Análise":
             if grupo not in pendencias_manuais:
                 pendencias_manuais[grupo] = []
             elif not isinstance(pendencias_manuais[grupo], list):
-                # Converter para lista se for string (para compatibilidade)
                 if pendencias_manuais[grupo] and pendencias_manuais[grupo].strip():
                     pendencias_manuais[grupo] = [pendencias_manuais[grupo]]
                 else:
@@ -1004,7 +1007,6 @@ elif st.session_state["etapa"] == "3. Análise":
                     pendencias_manuais[grupo][-1] = nova_pendencia
                     st.rerun()
             elif pendencias_manuais[grupo] and pendencias_manuais[grupo][-1]:
-                # Editar última inconformidade
                 ultima = pendencias_manuais[grupo][-1]
                 nova_pendencia = st.text_area(
                     f"Editar inconformidade (última adicionada)",
@@ -1205,7 +1207,6 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
         st.warning(f"⚠️ Atenção: {total - preenchidas} perguntas ainda estão pendentes. Revise antes de gerar o parecer.")
         st.info("💡 Você pode voltar para a etapa de Análise para responder as perguntas pendentes.")
     
-    # Contar inconformidades diversas
     total_diversas = 0
     for pendencias in pendencias_manuais.values():
         if isinstance(pendencias, list):
