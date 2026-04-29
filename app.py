@@ -113,12 +113,19 @@ st.markdown("""
         border-radius: 6px !important;
     }
     
-    /* Select boxes */
+    /* Select boxes - corrigido para ter fundo branco e texto escuro */
     .stSelectbox select {
         background-color: white !important;
         color: #1a1a1a !important;
         border: 1px solid #c5d5e6 !important;
         border-radius: 6px !important;
+        font-size: 14px !important;
+        font-weight: normal !important;
+    }
+    
+    .stSelectbox select:focus {
+        border-color: #1a5276 !important;
+        box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
     }
     
     /* Placeholder text */
@@ -161,29 +168,57 @@ st.markdown("""
         transition: width 0.3s ease;
     }
     
-    /* Botões */
+    /* BOTÕES CORRIGIDOS - FONTE BRANCA */
+    /* Todos os botões */
     .stButton > button {
-        border-radius: 8px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        background-color: #1a5276 !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
         color: white !important;
         border: none !important;
+        font-size: 14px !important;
     }
     
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        background-color: #2c6b96 !important;
-    }
-    
-    /* Botão primary */
+    /* Botão primary (Prosseguir, Gerar, etc) - verde */
     .stButton > button[kind="primary"] {
         background-color: #0d6e2e !important;
+        color: white !important;
     }
     
     .stButton > button[kind="primary"]:hover {
         background-color: #0f8a3a !important;
+        color: white !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    /* Botão secundário (Voltar, Sair, etc) - cinza/azul */
+    .stButton > button:not([kind="primary"]) {
+        background-color: #1a5276 !important;
+        color: white !important;
+    }
+    
+    .stButton > button:not([kind="primary"]):hover {
+        background-color: #2c6b96 !important;
+        color: white !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    /* Botões desabilitados */
+    .stButton > button:disabled {
+        background-color: #cccccc !important;
+        color: #666666 !important;
+        cursor: not-allowed !important;
+    }
+    
+    /* Garantia extra para todos os botões */
+    button {
+        color: white !important;
+    }
+    
+    button p {
+        color: white !important;
     }
     
     /* Headers */
@@ -241,10 +276,12 @@ st.markdown("""
     /* Download button */
     .stDownloadButton button {
         background-color: #0d6e2e !important;
+        color: white !important;
     }
     
     .stDownloadButton button:hover {
         background-color: #0f8a3a !important;
+        color: white !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -1098,7 +1135,7 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
             st.session_state["etapa"] = "4. Revisão"
             st.rerun()
     with col2:
-        # Botão de geração com validação completa (sem animação)
+        # Botão de geração com validação completa
         if st.button("📄 Gerar Parecer Técnico", use_container_width=True, type="primary"):
             # Validações rigorosas
             if not dados["protocolo"]:
