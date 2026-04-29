@@ -59,6 +59,13 @@ st.markdown("""
     font-weight: 600;
     font-size: 0.85rem;
 }
+.pendencia-manual {
+    background-color: #fff3e0;
+    border-left: 4px solid #ff9800;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -167,7 +174,7 @@ def sugerir_proxima_analise(protocolo):
     except ValueError:
         return "0"
 
-def salvar_historico(dados, respostas, observacoes, conclusao, analista, n_analise, arquivo_docx):
+def salvar_historico(dados, respostas, observacoes, conclusao, analista, n_analise, arquivo_docx, pendencias_manuais):
     pasta = get_pasta_protocolo(dados["protocolo"])
     os.makedirs(pasta, exist_ok=True)
 
@@ -182,6 +189,7 @@ def salvar_historico(dados, respostas, observacoes, conclusao, analista, n_anali
         "dados": dados,
         "respostas": respostas,
         "observacoes": observacoes,
+        "pendencias_manuais": pendencias_manuais,
         "conclusao": conclusao
     }
 
@@ -252,7 +260,8 @@ if ids_repetidos:
 def resposta_preenchida(valor):
     return valor not in ("", None, "Selecione...")
 
-def definir_conclusao(respostas):
+def definir_conclusao(respostas, pendencias_manuais=None):
+    # Verifica inconformidades das perguntas
     for p in perguntas:
         resposta = respostas.get(p["id"])
         if not resposta_preenchida(resposta):
@@ -260,12 +269,20 @@ def definir_conclusao(respostas):
         conformes = p.get("conformes", ["Sim", "Não se enquadra"])
         if resposta not in conformes and resposta in p.get("regras", {}):
             return "DESFAVORÁVEL"
+    
+    # Verifica pendências manuais
+    if pendencias_manuais:
+        for grupo, pendencia in pendencias_manuais.items():
+            if pendencia and pendencia.strip():
+                return "DESFAVORÁVEL"
+    
     return "FAVORÁVEL"
 
 
-def montar_inconformidades_por_grupo(respostas, observacoes):
+def montar_inconformidades_por_grupo(respostas, observacoes, pendencias_manuais=None):
     grupos = {}
 
+    # Inconformidades das perguntas
     for p in perguntas:
         pid = p["id"]
         resp = respostas.get(pid)
@@ -280,12 +297,18 @@ def montar_inconformidades_por_grupo(respostas, observacoes):
             if obs:
                 texto += f"\nObservação: {obs}"
             grupos.setdefault(grupo, []).append(texto)
+    
+    # Pendências manuais
+    if pendencias_manuais:
+        for grupo, pendencia in pendencias_manuais.items():
+            if pendencia and pendencia.strip():
+                grupos.setdefault(grupo, []).append(f"PENDÊNCIA MANUAL: {pendencia}")
 
     return grupos
 
 
-def montar_inconformidades_rt(respostas, observacoes):
-    grupos = montar_inconformidades_por_grupo(respostas, observacoes)
+def montar_inconformidades_rt(respostas, observacoes, pendencias_manuais=None):
+    grupos = montar_inconformidades_por_grupo(respostas, observacoes, pendencias_manuais)
 
     rt = RichText()
     contador = 1
@@ -304,19 +327,25 @@ def montar_inconformidades_rt(respostas, observacoes):
     return rt
 
 
-def gerar_docx(dados, respostas, observacoes, conclusao, analista, matricula, setor, n_analise):
+def gerar_docx(dados, respostas, observacoes, conclusao, analista, matricula, setor, n_analise, pendencias_manuais=None):
     if not os.path.exists("modelo_parecer.docx"):
         st.error("Arquivo modelo_parecer.docx não encontrado.")
         st.stop()
 
     doc = DocxTemplate("modelo_parecer.docx")
-    inconformidades_rt = montar_inconformidades_rt(respostas, observacoes)
+    inconformidades_rt = montar_inconformidades_rt(respostas, observacoes, pendencias_manuais)
+
+    # Formatar matrícula(s)
+    matriculas_str = dados.get("matriculas", "")
+    if isinstance(matriculas_str, list):
+        matriculas_str = ", ".join(matriculas_str)
 
     context = {
         "protocolo": dados["protocolo"],
         "tipo": dados["tipo"],
         "interessado": dados["interessado"],
         "n_lotes": dados["n_lotes"],
+        "matriculas": matriculas_str,
         "inconformidades": inconformidades_rt,
         "conclusao": conclusao,
         "data": f"Data: {datetime.now().strftime('%d/%m/%Y')}",
@@ -391,14 +420,18 @@ def inicializar_estados():
         st.session_state["interessado"] = ""
     if "n_lotes" not in st.session_state:
         st.session_state["n_lotes"] = 1
+    if "matriculas" not in st.session_state:
+        st.session_state["matriculas"] = ""
     if "analista" not in st.session_state:
         st.session_state["analista"] = ""
-    if "matricula" not in st.session_state:
-        st.session_state["matricula"] = ""
+    if "matricula_analista" not in st.session_state:
+        st.session_state["matricula_analista"] = ""
     if "setor" not in st.session_state:
         st.session_state["setor"] = ""
     if "n_analise" not in st.session_state:
         st.session_state["n_analise"] = ""
+    if "pendencias_manuais" not in st.session_state:
+        st.session_state["pendencias_manuais"] = {}
 
 # -------------------------
 # INICIALIZAÇÃO
@@ -439,31 +472,6 @@ if st.session_state["etapa"] == "1. Protocolo":
     with c2:
         st.markdown("<div class='small-muted'>Use o mesmo protocolo para continuar uma análise já existente.</div>", unsafe_allow_html=True)
 
-    if st.session_state["protocolo"]:
-        ultima = carregar_ultima_analise(st.session_state["protocolo"])
-        if ultima:
-            st.info(f"📋 Última análise encontrada: AN{ultima['n_analise']} - Data: {ultima.get('data', 'Data não disponível')}")
-            col_a, col_b = st.columns([1, 1])
-            with col_a:
-                if st.button("▶️ Continuar análise", use_container_width=True):
-                    st.session_state["dados_antigos"] = ultima
-                    st.session_state["tipo"] = ultima["dados"].get("tipo", "Loteamento")
-                    st.session_state["interessado"] = ultima["dados"].get("interessado", "")
-                    st.session_state["n_lotes"] = int(ultima["dados"].get("n_lotes", 1))
-                    st.session_state["etapa"] = "2. Analista"
-                    st.rerun()
-            with col_b:
-                if st.button("➕ Iniciar nova análise", use_container_width=True):
-                    st.session_state["dados_antigos"] = None
-                    st.session_state["etapa"] = "2. Analista"
-                    st.rerun()
-        else:
-            st.success("✅ Nenhum histórico encontrado para este protocolo.")
-            if st.button("Prosseguir →", use_container_width=True):
-                st.session_state["dados_antigos"] = None
-                st.session_state["etapa"] = "2. Analista"
-                st.rerun()
-
     st.subheader("📋 Dados do empreendimento")
     
     tipo = st.selectbox(
@@ -479,6 +487,54 @@ if st.session_state["etapa"] == "1. Protocolo":
     
     n_lotes = st.number_input("Número de Lotes", min_value=1, value=st.session_state["n_lotes"], key="n_lotes_input")
     st.session_state["n_lotes"] = n_lotes
+    
+    # Campo para matrícula(s) do empreendimento
+    matriculas = st.text_area(
+        "Matrícula(s) do Empreendimento",
+        value=st.session_state["matriculas"],
+        key="matriculas_input",
+        placeholder="Digite a(s) matrícula(s) separadas por vírgula. Ex: 12345, 67890",
+        help="Informe a(s) matrícula(s) do imóvel no cartório de registro de imóveis"
+    )
+    st.session_state["matriculas"] = matriculas
+
+    st.markdown("---")
+    
+    # Botão de prosseguir no final
+    if st.session_state["protocolo"]:
+        ultima = carregar_ultima_analise(st.session_state["protocolo"])
+        if ultima:
+            st.info(f"📋 Última análise encontrada: AN{ultima['n_analise']} - Data: {ultima.get('data', 'Data não disponível')}")
+            col_a, col_b = st.columns([1, 1])
+            with col_a:
+                if st.button("▶️ Continuar análise", use_container_width=True):
+                    st.session_state["dados_antigos"] = ultima
+                    st.session_state["tipo"] = ultima["dados"].get("tipo", "Loteamento")
+                    st.session_state["interessado"] = ultima["dados"].get("interessado", "")
+                    st.session_state["n_lotes"] = int(ultima["dados"].get("n_lotes", 1))
+                    st.session_state["matriculas"] = ultima["dados"].get("matriculas", "")
+                    st.session_state["etapa"] = "2. Analista"
+                    st.rerun()
+            with col_b:
+                if st.button("➕ Iniciar nova análise", use_container_width=True):
+                    st.session_state["dados_antigos"] = None
+                    st.session_state["etapa"] = "2. Analista"
+                    st.rerun()
+        else:
+            st.success("✅ Nenhum histórico encontrado para este protocolo.")
+            if st.button("Prosseguir →", use_container_width=True, type="primary"):
+                if not st.session_state["protocolo"]:
+                    st.error("⚠️ Por favor, informe o número do protocolo.")
+                elif not st.session_state["interessado"]:
+                    st.error("⚠️ Por favor, informe o requerente.")
+                else:
+                    st.session_state["dados_antigos"] = None
+                    st.session_state["etapa"] = "2. Analista"
+                    st.rerun()
+    else:
+        st.warning("⚠️ Informe o número do protocolo para continuar.")
+        if st.button("Prosseguir →", use_container_width=True, type="primary", disabled=True):
+            pass
 
 # -------------------------
 # ETAPA 2
@@ -494,8 +550,8 @@ elif st.session_state["etapa"] == "2. Analista":
         analista = st.text_input("Nome do Analista", value=st.session_state["analista"], key="analista_input")
         st.session_state["analista"] = analista
         
-        matricula = st.text_input("Matrícula", value=st.session_state["matricula"], key="matricula_input")
-        st.session_state["matricula"] = matricula
+        matricula_analista = st.text_input("Matrícula do Analista", value=st.session_state["matricula_analista"], key="matricula_analista_input")
+        st.session_state["matricula_analista"] = matricula_analista
         
     with c2:
         setor = st.text_input("Setor", value=st.session_state["setor"], key="setor_input")
@@ -514,7 +570,7 @@ elif st.session_state["etapa"] == "2. Analista":
             st.session_state["etapa"] = "1. Protocolo"
             st.rerun()
     with col2:
-        if st.button("Prosseguir →", use_container_width=True):
+        if st.button("Prosseguir →", use_container_width=True, type="primary"):
             # Validar campos obrigatórios
             if not st.session_state["analista"]:
                 st.error("⚠️ Por favor, informe o nome do analista.")
@@ -525,7 +581,7 @@ elif st.session_state["etapa"] == "2. Analista":
                 st.rerun()
 
 # -------------------------
-# ETAPA 3 (VERSÃO CORRIGIDA COM STATUS VISUAL)
+# ETAPA 3 (VERSÃO CORRIGIDA COM STATUS VISUAL E PENDÊNCIAS MANUAIS)
 # -------------------------
 elif st.session_state["etapa"] == "3. Análise":
     st.header("🔍 Análise técnica")
@@ -536,6 +592,7 @@ elif st.session_state["etapa"] == "3. Análise":
     respostas = {}
     observacoes = {}
     grupos_ui = {}
+    pendencias_manuais = st.session_state.get("pendencias_manuais", {})
 
     for idx, p in enumerate(perguntas):
         grupos_ui.setdefault(p["grupo"], []).append((idx, p))
@@ -623,6 +680,30 @@ elif st.session_state["etapa"] == "3. Análise":
                         """, unsafe_allow_html=True)
                 
                 st.markdown("---")  # Separador entre perguntas
+            
+            # Campo para pendências manuais no final de cada grupo
+            st.markdown("### 📝 Pendências Manuais")
+            st.caption("Registre aqui quaisquer pendências adicionais não cobertas pelas perguntas acima")
+            
+            chave_pendencia = f"pendencia_{grupo}"
+            valor_padrao_pendencia = pendencias_manuais.get(grupo, "")
+            
+            pendencia = st.text_area(
+                f"Pendências para o grupo: {grupo}",
+                value=valor_padrao_pendencia,
+                key=chave_pendencia,
+                height=80,
+                placeholder="Ex: Documentação incompleta, falta de assinatura, necessidade de complementação de informações..."
+            )
+            pendencias_manuais[grupo] = pendencia
+            
+            if pendencia and pendencia.strip():
+                inconformes_sidebar.append(f"{grupo} - Pendência Manual")
+            
+            st.markdown("---")
+
+    # Salvar pendências manuais no session_state
+    st.session_state["pendencias_manuais"] = pendencias_manuais
 
     preenchidas, total, pct = progresso_percentual(respostas)
 
@@ -643,7 +724,7 @@ elif st.session_state["etapa"] == "3. Análise":
             st.session_state["etapa"] = "2. Analista"
             st.rerun()
     with col2:
-        if st.button("Prosseguir para revisão →", use_container_width=True):
+        if st.button("Prosseguir para revisão →", use_container_width=True, type="primary"):
             # Salvar respostas e observações no session_state para usar na revisão
             st.session_state["respostas_temp"] = respostas
             st.session_state["observacoes_temp"] = observacoes
@@ -669,11 +750,13 @@ elif st.session_state["etapa"] == "4. Revisão":
             respostas[p["id"]] = st.session_state.get(f"resp_{chave_base}", "Selecione...")
             observacoes[p["id"]] = st.session_state.get(f"obs_{chave_base}", "")
 
+    pendencias_manuais = st.session_state.get("pendencias_manuais", {})
+
     preenchidas, total, pct = progresso_percentual(respostas)
     render_progresso(preenchidas, total, pct, st)
 
-    conclusao = definir_conclusao(respostas)
-    grupos_inconformes = montar_inconformidades_por_grupo(respostas, observacoes)
+    conclusao = definir_conclusao(respostas, pendencias_manuais)
+    grupos_inconformes = montar_inconformidades_por_grupo(respostas, observacoes, pendencias_manuais)
 
     col1, col2 = st.columns([1.4, 1])
 
@@ -682,6 +765,7 @@ elif st.session_state["etapa"] == "4. Revisão":
         st.write(f"**Protocolo:** {st.session_state.get('protocolo', '')}")
         st.write(f"**Requerente:** {st.session_state.get('interessado', '')}")
         st.write(f"**Tipo:** {st.session_state.get('tipo', '')}")
+        st.write(f"**Matrícula(s):** {st.session_state.get('matriculas', '')}")
         st.write(f"**Analista:** {st.session_state.get('analista', '')}")
         st.write(f"**Nº da análise:** {st.session_state.get('n_analise', '')}")
         
@@ -734,7 +818,7 @@ elif st.session_state["etapa"] == "4. Revisão":
             st.session_state["etapa"] = "3. Análise"
             st.rerun()
     with col2:
-        if st.button("Prosseguir para geração →", use_container_width=True):
+        if st.button("Prosseguir para geração →", use_container_width=True, type="primary"):
             st.session_state["etapa"] = "5. Gerar parecer"
             st.rerun()
 
@@ -757,6 +841,8 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
             respostas[p["id"]] = st.session_state.get(f"resp_{chave_base}", "Selecione...")
             observacoes[p["id"]] = st.session_state.get(f"obs_{chave_base}", "")
 
+    pendencias_manuais = st.session_state.get("pendencias_manuais", {})
+
     preenchidas, total, pct = progresso_percentual(respostas)
     render_progresso(preenchidas, total, pct, st)
 
@@ -764,10 +850,11 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
         "protocolo": st.session_state.get("protocolo", ""),
         "tipo": st.session_state.get("tipo", ""),
         "interessado": st.session_state.get("interessado", ""),
-        "n_lotes": st.session_state.get("n_lotes", 1)
+        "n_lotes": st.session_state.get("n_lotes", 1),
+        "matriculas": st.session_state.get("matriculas", "")
     }
 
-    conclusao = definir_conclusao(respostas)
+    conclusao = definir_conclusao(respostas, pendencias_manuais)
 
     # Display dos dados principais
     col1, col2 = st.columns(2)
@@ -775,9 +862,11 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
         st.write(f"**📌 Protocolo:** {dados['protocolo']}")
         st.write(f"**👤 Requerente:** {dados['interessado']}")
         st.write(f"**🏢 Tipo:** {dados['tipo']}")
+        st.write(f"**📋 Matrícula(s):** {dados['matriculas']}")
     with col2:
         st.write(f"**🔢 Nº Lotes:** {dados['n_lotes']}")
         st.write(f"**👨‍💼 Analista:** {st.session_state.get('analista', '')}")
+        st.write(f"**🔢 Matrícula Analista:** {st.session_state.get('matricula_analista', '')}")
         st.write(f"**🔍 Nº Análise:** {st.session_state.get('n_analise', '')}")
         
     # Conclusão
@@ -803,6 +892,13 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
         st.warning(f"⚠️ Atenção: {total - preenchidas} perguntas ainda estão pendentes. Revise antes de gerar o parecer.")
         st.info("💡 Você pode voltar para a etapa de Análise para responder as perguntas pendentes.")
     
+    # Exibir pendências manuais
+    pendencias_registradas = {k: v for k, v in pendencias_manuais.items() if v and v.strip()}
+    if pendencias_registradas:
+        st.warning("⚠️ Pendências manuais registradas:")
+        for grupo, pendencia in pendencias_registradas.items():
+            st.markdown(f"- **{grupo}:** {pendencia}")
+    
     col1, col2 = st.columns([1, 1])
     with col1:
         if st.button("← Voltar para revisão", use_container_width=True):
@@ -824,46 +920,56 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
                 st.error("❌ Número da análise não informado. Volte à etapa 2 e preencha o número da análise.")
                 st.stop()
             
-            if preenchidas < total:
-                st.warning(f"⚠️ {total - preenchidas} perguntas pendentes. Deseja continuar mesmo assim?")
-                if not st.button("✅ Sim, continuar mesmo com pendências"):
-                    st.stop()
+            # Verificar modelo do documento
+            if not os.path.exists("modelo_parecer.docx"):
+                st.error("❌ Arquivo 'modelo_parecer.docx' não encontrado. Verifique se o arquivo está no diretório correto.")
+                st.stop()
             
             try:
-                arquivo = gerar_docx(
-                    dados=dados,
-                    respostas=respostas,
-                    observacoes=observacoes,
-                    conclusao=conclusao,
-                    analista=st.session_state.get("analista", ""),
-                    matricula=st.session_state.get("matricula", ""),
-                    setor=st.session_state.get("setor", ""),
-                    n_analise=st.session_state.get("n_analise", "")
-                )
+                with st.spinner("Gerando parecer técnico... Aguarde."):
+                    arquivo = gerar_docx(
+                        dados=dados,
+                        respostas=respostas,
+                        observacoes=observacoes,
+                        conclusao=conclusao,
+                        analista=st.session_state.get("analista", ""),
+                        matricula=st.session_state.get("matricula_analista", ""),
+                        setor=st.session_state.get("setor", ""),
+                        n_analise=st.session_state.get("n_analise", ""),
+                        pendencias_manuais=pendencias_manuais
+                    )
 
-                salvar_historico(
-                    dados=dados,
-                    respostas=respostas,
-                    observacoes=observacoes,
-                    conclusao=conclusao,
-                    analista=st.session_state.get("analista", ""),
-                    n_analise=st.session_state.get("n_analise", ""),
-                    arquivo_docx=arquivo
-                )
+                    salvar_historico(
+                        dados=dados,
+                        respostas=respostas,
+                        observacoes=observacoes,
+                        conclusao=conclusao,
+                        analista=st.session_state.get("analista", ""),
+                        n_analise=st.session_state.get("n_analise", ""),
+                        arquivo_docx=arquivo,
+                        pendencias_manuais=pendencias_manuais
+                    )
 
-                protocolo_limpo = dados["protocolo"].replace("/", "-")
-                data_arquivo = datetime.now().strftime("%d-%m-%Y")
-                analise_str = f"AN{st.session_state.get('n_analise', '0')}"
-                nome_arquivo = f"PU_{protocolo_limpo}_{data_arquivo}_{analise_str}.docx"
+                    protocolo_limpo = dados["protocolo"].replace("/", "-")
+                    data_arquivo = datetime.now().strftime("%d-%m-%Y")
+                    analise_str = f"AN{st.session_state.get('n_analise', '0')}"
+                    nome_arquivo = f"PU_{protocolo_limpo}_{data_arquivo}_{analise_str}.docx"
 
-                st.success("✅ Parecer gerado e histórico salvo com sucesso!")
-                st.download_button(
-                    label="⬇️ Baixar parecer (.docx)",
-                    data=arquivo,
-                    file_name=nome_arquivo,
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    use_container_width=True
-                )
+                    st.success("✅ Parecer gerado e histórico salvo com sucesso!")
+                    st.balloons()
+                    
+                    st.download_button(
+                        label="⬇️ Baixar parecer (.docx)",
+                        data=arquivo,
+                        file_name=nome_arquivo,
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        use_container_width=True
+                    )
+                    
             except Exception as e:
                 st.error(f"❌ Erro ao gerar o parecer: {str(e)}")
-                st.error("Verifique se o arquivo 'modelo_parecer.docx' existe e está no formato correto.")
+                st.error("Verifique se:")
+                st.error("1. O arquivo 'modelo_parecer.docx' existe no diretório")
+                st.error("2. O arquivo 'modelo_parecer.docx' não está corrompido")
+                st.error("3. Todas as variáveis do template estão corretas")
+                st.exception(e)
