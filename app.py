@@ -45,6 +45,20 @@ st.markdown("""
     border-radius: 999px;
     transition: width 0.3s ease;
 }
+.status-badge {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 28px;
+    text-align: center;
+}
+.status-icon {
+    font-size: 20px;
+    display: block;
+}
+.status-text {
+    font-weight: 600;
+    font-size: 0.85rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -344,7 +358,6 @@ def progresso_percentual(respostas):
 
 
 def cor_progresso(pct):
-    # 0 = vermelho, 1 = verde
     r = int(255 * (1 - pct))
     g = int(180 * pct + 60)
     b = 60
@@ -361,14 +374,36 @@ def render_progresso(preenchidas, total, pct, destino):
     """
     destino.markdown(html, unsafe_allow_html=True)
 
-# -------------------------
-# ESTADO INICIAL
-# -------------------------
-if "dados_antigos" not in st.session_state:
-    st.session_state["dados_antigos"] = None
+def inicializar_estados():
+    """Inicializa todos os estados necessários"""
+    if "dados_antigos" not in st.session_state:
+        st.session_state["dados_antigos"] = None
+    
+    if "etapa" not in st.session_state:
+        st.session_state["etapa"] = "1. Protocolo"
+    
+    # Campos base
+    if "protocolo" not in st.session_state:
+        st.session_state["protocolo"] = ""
+    if "tipo" not in st.session_state:
+        st.session_state["tipo"] = "Loteamento"
+    if "interessado" not in st.session_state:
+        st.session_state["interessado"] = ""
+    if "n_lotes" not in st.session_state:
+        st.session_state["n_lotes"] = 1
+    if "analista" not in st.session_state:
+        st.session_state["analista"] = ""
+    if "matricula" not in st.session_state:
+        st.session_state["matricula"] = ""
+    if "setor" not in st.session_state:
+        st.session_state["setor"] = ""
+    if "n_analise" not in st.session_state:
+        st.session_state["n_analise"] = ""
 
-if "etapa" not in st.session_state:
-    st.session_state["etapa"] = "1. Protocolo"
+# -------------------------
+# INICIALIZAÇÃO
+# -------------------------
+inicializar_estados()
 
 # -------------------------
 # CABEÇALHO
@@ -384,27 +419,11 @@ etapas = [
     "5. Gerar parecer"
 ]
 
-st.session_state["etapa"] = st.sidebar.radio("Etapas", etapas, index=etapas.index(st.session_state["etapa"]))
-
-# -------------------------
-# CAMPOS BASE
-# -------------------------
-dados_antigos = st.session_state.get("dados_antigos")
-
-if "protocolo" not in st.session_state:
-    st.session_state["protocolo"] = ""
-if "tipo" not in st.session_state:
-    st.session_state["tipo"] = "Loteamento"
-if "interessado" not in st.session_state:
-    st.session_state["interessado"] = ""
-if "n_lotes" not in st.session_state:
-    st.session_state["n_lotes"] = 1
-if "analista" not in st.session_state:
-    st.session_state["analista"] = ""
-if "matricula" not in st.session_state:
-    st.session_state["matricula"] = ""
-if "setor" not in st.session_state:
-    st.session_state["setor"] = ""
+# Mostrar etapa atual com indicador
+etapa_atual = st.sidebar.radio("Etapas", etapas, index=etapas.index(st.session_state["etapa"]))
+if etapa_atual != st.session_state["etapa"]:
+    st.session_state["etapa"] = etapa_atual
+    st.rerun()
 
 # -------------------------
 # ETAPA 1
@@ -414,14 +433,16 @@ if st.session_state["etapa"] == "1. Protocolo":
 
     c1, c2 = st.columns([2, 1])
     with c1:
-        protocolo = st.text_input("N° Protocolo", key="protocolo")
+        protocolo = st.text_input("N° Protocolo", value=st.session_state["protocolo"], key="protocolo_input")
+        if protocolo != st.session_state["protocolo"]:
+            st.session_state["protocolo"] = protocolo
     with c2:
         st.markdown("<div class='small-muted'>Use o mesmo protocolo para continuar uma análise já existente.</div>", unsafe_allow_html=True)
 
-    if protocolo:
-        ultima = carregar_ultima_analise(protocolo)
+    if st.session_state["protocolo"]:
+        ultima = carregar_ultima_analise(st.session_state["protocolo"])
         if ultima:
-            st.info(f"Última análise encontrada: AN{ultima['n_analise']}")
+            st.info(f"📋 Última análise encontrada: AN{ultima['n_analise']} - Data: {ultima.get('data', 'Data não disponível')}")
             col_a, col_b = st.columns([1, 1])
             with col_a:
                 if st.button("▶️ Continuar análise", use_container_width=True):
@@ -437,37 +458,55 @@ if st.session_state["etapa"] == "1. Protocolo":
                     st.session_state["etapa"] = "2. Analista"
                     st.rerun()
         else:
-            st.success("Nenhum histórico encontrado para este protocolo.")
-            if st.button("Prosseguir", use_container_width=True):
+            st.success("✅ Nenhum histórico encontrado para este protocolo.")
+            if st.button("Prosseguir →", use_container_width=True):
                 st.session_state["dados_antigos"] = None
                 st.session_state["etapa"] = "2. Analista"
                 st.rerun()
 
-    st.subheader("Dados do empreendimento")
-    st.selectbox(
+    st.subheader("📋 Dados do empreendimento")
+    
+    tipo = st.selectbox(
         "Tipo do Empreendimento",
         ["Loteamento", "Condomínio fechado de lotes"],
-        key="tipo"
+        index=0 if st.session_state["tipo"] == "Loteamento" else 1,
+        key="tipo_select"
     )
-    st.text_input("Requerente", key="interessado")
-    st.number_input("Número de Lotes", min_value=1, key="n_lotes")
+    st.session_state["tipo"] = tipo
+    
+    interessado = st.text_input("Requerente", value=st.session_state["interessado"], key="interessado_input")
+    st.session_state["interessado"] = interessado
+    
+    n_lotes = st.number_input("Número de Lotes", min_value=1, value=st.session_state["n_lotes"], key="n_lotes_input")
+    st.session_state["n_lotes"] = n_lotes
 
 # -------------------------
 # ETAPA 2
 # -------------------------
 elif st.session_state["etapa"] == "2. Analista":
-    st.header("Dados do analista")
+    st.header("👤 Dados do analista")
+    
+    # Exibir resumo do protocolo atual
+    st.info(f"📌 Protocolo: **{st.session_state['protocolo']}** | Empreendimento: **{st.session_state['interessado']}**")
 
     c1, c2 = st.columns(2)
     with c1:
-        st.text_input("Nome do Analista", key="analista")
-        st.text_input("Matrícula", key="matricula")
+        analista = st.text_input("Nome do Analista", value=st.session_state["analista"], key="analista_input")
+        st.session_state["analista"] = analista
+        
+        matricula = st.text_input("Matrícula", value=st.session_state["matricula"], key="matricula_input")
+        st.session_state["matricula"] = matricula
+        
     with c2:
-        st.text_input("Setor", key="setor")
-        n_analise_sugerida = sugerir_proxima_analise(st.session_state["protocolo"]) if st.session_state["protocolo"] else "0"
-        if "n_analise" not in st.session_state:
+        setor = st.text_input("Setor", value=st.session_state["setor"], key="setor_input")
+        st.session_state["setor"] = setor
+        
+        n_analise_sugerida = sugerir_proxima_analise(st.session_state["protocolo"]) if st.session_state["protocolo"] else "1"
+        if not st.session_state["n_analise"]:
             st.session_state["n_analise"] = n_analise_sugerida
-        st.text_input("Nº da Análise", key="n_analise")
+        
+        n_analise = st.text_input("Nº da Análise", value=st.session_state["n_analise"], key="n_analise_input")
+        st.session_state["n_analise"] = n_analise
 
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -476,14 +515,23 @@ elif st.session_state["etapa"] == "2. Analista":
             st.rerun()
     with col2:
         if st.button("Prosseguir →", use_container_width=True):
-            st.session_state["etapa"] = "3. Análise"
-            st.rerun()
+            # Validar campos obrigatórios
+            if not st.session_state["analista"]:
+                st.error("⚠️ Por favor, informe o nome do analista.")
+            elif not st.session_state["n_analise"]:
+                st.error("⚠️ Por favor, informe o número da análise.")
+            else:
+                st.session_state["etapa"] = "3. Análise"
+                st.rerun()
 
 # -------------------------
-# ETAPA 3
+# ETAPA 3 (VERSÃO CORRIGIDA COM STATUS VISUAL)
 # -------------------------
 elif st.session_state["etapa"] == "3. Análise":
-    st.header("Análise técnica")
+    st.header("🔍 Análise técnica")
+    
+    # Exibir resumo do protocolo e analista
+    st.info(f"📌 Protocolo: **{st.session_state['protocolo']}** | Analista: **{st.session_state['analista']}** | Análise Nº: **{st.session_state['n_analise']}**")
 
     respostas = {}
     observacoes = {}
@@ -495,7 +543,7 @@ elif st.session_state["etapa"] == "3. Análise":
     inconformes_sidebar = []
 
     for grupo, lista in grupos_ui.items():
-        with st.expander(grupo, expanded=False):
+        with st.expander(f"📁 {grupo}", expanded=False):
             for idx, p in lista:
                 pid = p["id"]
                 valor_padrao = None
@@ -518,62 +566,108 @@ elif st.session_state["etapa"] == "3. Análise":
 
                 indice_padrao = opcoes_exibicao.index(st.session_state[chave_resp]) if st.session_state[chave_resp] in opcoes_exibicao else 0
 
-                col1, col2 = st.columns([1.2, 1])
-                with col1:
-                    respostas[pid] = st.selectbox(
+                # Layout: pergunta + status lado a lado
+                col_pergunta, col_status = st.columns([3, 1])
+                
+                with col_pergunta:
+                    resposta = st.selectbox(
                         p["pergunta"],
                         opcoes_exibicao,
                         index=indice_padrao,
                         key=chave_resp,
                         help=f"ID: {pid}"
                     )
-                with col2:
-                    observacoes[pid] = st.text_area(
-                        "Observação",
-                        key=chave_obs,
-                        height=80
-                    )
+                    respostas[pid] = resposta
+                
+                # Campo de observação abaixo
+                obs = st.text_area(
+                    "📝 Observação (opcional)",
+                    key=chave_obs,
+                    height=68,
+                    placeholder="Registre detalhes adicionais sobre esta resposta..."
+                )
+                observacoes[pid] = obs
 
+                # Determinar e exibir o status
                 status = resumo_status_pergunta(p, respostas[pid])
-                if status == "inconforme":
-                    st.error("Inconformidade identificada")
-                    inconformes_sidebar.append(p["pergunta"])
-                elif status == "na":
-                    st.info("Não se enquadra")
-                elif status == "conforme":
-                    st.success("Conforme")
-                else:
-                    st.warning("Pendente de resposta")
+                
+                with col_status:
+                    if status == "inconforme":
+                        st.markdown("""
+                        <div class='status-badge' style='background-color:#fdeaea; border-left: 4px solid #b42318;'>
+                            <span class='status-icon'>⛔</span>
+                            <div class='status-text' style='color: #b42318;'>INCONFORME</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        inconformes_sidebar.append(p["pergunta"])
+                    elif status == "na":
+                        st.markdown("""
+                        <div class='status-badge' style='background-color:#eef4ff; border-left: 4px solid #175cd3;'>
+                            <span class='status-icon'>ℹ️</span>
+                            <div class='status-text' style='color: #175cd3;'>NÃO SE ENQUADRA</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    elif status == "conforme":
+                        st.markdown("""
+                        <div class='status-badge' style='background-color:#ecfdf3; border-left: 4px solid #067647;'>
+                            <span class='status-icon'>✅</span>
+                            <div class='status-text' style='color: #067647;'>CONFORME</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    else:  # pendente
+                        st.markdown("""
+                        <div class='status-badge' style='background-color:#fffaeb; border-left: 4px solid #b54708;'>
+                            <span class='status-icon'>⏳</span>
+                            <div class='status-text' style='color: #b54708;'>PENDENTE</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                
+                st.markdown("---")  # Separador entre perguntas
 
     preenchidas, total, pct = progresso_percentual(respostas)
 
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### Progresso")
+    st.sidebar.markdown("### 📊 Progresso")
     render_progresso(preenchidas, total, pct, st.sidebar)
 
-    st.sidebar.markdown("### ⚠ Inconformidades")
+    st.sidebar.markdown("### ⚠️ Inconformidades")
     if inconformes_sidebar:
         for item in inconformes_sidebar[:20]:
             st.sidebar.write(f"- {item}")
     else:
         st.sidebar.write("Nenhuma até o momento.")
 
-    if st.button("Prosseguir para revisão →", use_container_width=True):
-        st.session_state["etapa"] = "4. Revisão"
-        st.rerun()
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("← Voltar", use_container_width=True):
+            st.session_state["etapa"] = "2. Analista"
+            st.rerun()
+    with col2:
+        if st.button("Prosseguir para revisão →", use_container_width=True):
+            # Salvar respostas e observações no session_state para usar na revisão
+            st.session_state["respostas_temp"] = respostas
+            st.session_state["observacoes_temp"] = observacoes
+            st.session_state["etapa"] = "4. Revisão"
+            st.rerun()
 
 # -------------------------
 # ETAPA 4
 # -------------------------
 elif st.session_state["etapa"] == "4. Revisão":
-    st.header("Revisão da análise")
-
-    respostas = {}
-    observacoes = {}
-    for idx, p in enumerate(perguntas):
-        chave_base = f"{idx}_{p['grupo']}_{p['id']}"
-        respostas[p["id"]] = st.session_state.get(f"resp_{chave_base}", "Selecione...")
-        observacoes[p["id"]] = st.session_state.get(f"obs_{chave_base}", "")
+    st.header("📋 Revisão da análise")
+    
+    # Recuperar respostas e observações
+    if "respostas_temp" in st.session_state:
+        respostas = st.session_state["respostas_temp"]
+        observacoes = st.session_state["observacoes_temp"]
+    else:
+        # Fallback: tentar recuperar dos campos
+        respostas = {}
+        observacoes = {}
+        for idx, p in enumerate(perguntas):
+            chave_base = f"{idx}_{p['grupo']}_{p['id']}"
+            respostas[p["id"]] = st.session_state.get(f"resp_{chave_base}", "Selecione...")
+            observacoes[p["id"]] = st.session_state.get(f"obs_{chave_base}", "")
 
     preenchidas, total, pct = progresso_percentual(respostas)
     render_progresso(preenchidas, total, pct, st)
@@ -584,31 +678,37 @@ elif st.session_state["etapa"] == "4. Revisão":
     col1, col2 = st.columns([1.4, 1])
 
     with col1:
-        st.subheader("Resumo geral")
+        st.subheader("📌 Resumo geral")
         st.write(f"**Protocolo:** {st.session_state.get('protocolo', '')}")
         st.write(f"**Requerente:** {st.session_state.get('interessado', '')}")
         st.write(f"**Tipo:** {st.session_state.get('tipo', '')}")
+        st.write(f"**Analista:** {st.session_state.get('analista', '')}")
         st.write(f"**Nº da análise:** {st.session_state.get('n_analise', '')}")
-        st.write(f"**Conclusão preliminar:** {conclusao}")
+        
+        # Exibir conclusão com cor
+        if conclusao == "FAVORÁVEL":
+            st.success(f"✅ **Conclusão preliminar:** {conclusao}")
+        else:
+            st.error(f"❌ **Conclusão preliminar:** {conclusao}")
 
     with col2:
-        st.subheader("Contagem")
+        st.subheader("📊 Contagem")
         total_inconformes = sum(len(v) for v in grupos_inconformes.values())
         st.metric("Perguntas", len(perguntas))
         st.metric("Respondidas", preenchidas)
         st.metric("Inconformidades", total_inconformes)
 
-    st.subheader("Inconformidades identificadas")
+    st.subheader("⚠️ Inconformidades identificadas")
     if grupos_inconformes:
         for grupo, itens in grupos_inconformes.items():
             st.markdown(f"#### {grupo}")
             for i, item in enumerate(itens, start=1):
                 st.markdown(f"<div class='card'><b>{i}.</b> {item.replace(chr(10), '<br>')}</div>", unsafe_allow_html=True)
     else:
-        st.success("Não foram identificadas inconformidades.")
+        st.success("✅ Não foram identificadas inconformidades.")
 
     if st.session_state.get("dados_antigos"):
-        st.subheader("Alterações em relação à análise anterior")
+        st.subheader("🔄 Alterações em relação à análise anterior")
         houve_alteracao = False
         dados_antigos = st.session_state["dados_antigos"]
 
@@ -622,11 +722,11 @@ elif st.session_state["etapa"] == "4. Revisão":
             if antiga != atual or obs_antiga != obs_atual:
                 houve_alteracao = True
                 st.warning(
-                    f"{pid}: resposta '{antiga}' → '{atual}' | observação '{obs_antiga}' → '{obs_atual}'"
+                    f"**{pid}:** resposta '{antiga}' → '{atual}' | observação '{obs_antiga}' → '{obs_atual}'"
                 )
 
         if not houve_alteracao:
-            st.success("Nenhuma alteração identificada em relação à análise carregada.")
+            st.success("✅ Nenhuma alteração identificada em relação à análise carregada.")
 
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -642,14 +742,20 @@ elif st.session_state["etapa"] == "4. Revisão":
 # ETAPA 5
 # -------------------------
 elif st.session_state["etapa"] == "5. Gerar parecer":
-    st.header("Geração do parecer")
-
-    respostas = {}
-    observacoes = {}
-    for idx, p in enumerate(perguntas):
-        chave_base = f"{idx}_{p['grupo']}_{p['id']}"
-        respostas[p["id"]] = st.session_state.get(f"resp_{chave_base}", "Selecione...")
-        observacoes[p["id"]] = st.session_state.get(f"obs_{chave_base}", "")
+    st.header("📄 Geração do parecer")
+    
+    # Recuperar respostas e observações
+    if "respostas_temp" in st.session_state:
+        respostas = st.session_state["respostas_temp"]
+        observacoes = st.session_state["observacoes_temp"]
+    else:
+        # Fallback: tentar recuperar dos campos
+        respostas = {}
+        observacoes = {}
+        for idx, p in enumerate(perguntas):
+            chave_base = f"{idx}_{p['grupo']}_{p['id']}"
+            respostas[p["id"]] = st.session_state.get(f"resp_{chave_base}", "Selecione...")
+            observacoes[p["id"]] = st.session_state.get(f"obs_{chave_base}", "")
 
     preenchidas, total, pct = progresso_percentual(respostas)
     render_progresso(preenchidas, total, pct, st)
@@ -663,53 +769,101 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
 
     conclusao = definir_conclusao(respostas)
 
-    st.write(f"**Protocolo:** {dados['protocolo']}")
-    st.write(f"**Conclusão final:** {conclusao}")
+    # Display dos dados principais
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write(f"**📌 Protocolo:** {dados['protocolo']}")
+        st.write(f"**👤 Requerente:** {dados['interessado']}")
+        st.write(f"**🏢 Tipo:** {dados['tipo']}")
+    with col2:
+        st.write(f"**🔢 Nº Lotes:** {dados['n_lotes']}")
+        st.write(f"**👨‍💼 Analista:** {st.session_state.get('analista', '')}")
+        st.write(f"**🔍 Nº Análise:** {st.session_state.get('n_analise', '')}")
+        
+    # Conclusão
+    if conclusao == "FAVORÁVEL":
+        st.success(f"✅ **Conclusão final:** {conclusao}")
+    else:
+        st.error(f"❌ **Conclusão final:** {conclusao}")
 
-    if st.button("📄 Gerar Parecer Técnico", use_container_width=True):
-        if not str(dados["protocolo"]).strip():
-            st.error("Informe o número do protocolo.")
-            st.stop()
+    # Validar campos obrigatórios
+    campos_invalidos = []
+    if not dados["protocolo"]:
+        campos_invalidos.append("Protocolo")
+    if not st.session_state.get("analista"):
+        campos_invalidos.append("Analista")
+    if not st.session_state.get("n_analise"):
+        campos_invalidos.append("Número da Análise")
+    
+    if campos_invalidos:
+        st.error(f"⚠️ Campos obrigatórios pendentes: {', '.join(campos_invalidos)}")
+    
+    # Verificar se todas as perguntas foram respondidas
+    if preenchidas < total:
+        st.warning(f"⚠️ Atenção: {total - preenchidas} perguntas ainda estão pendentes. Revise antes de gerar o parecer.")
+        st.info("💡 Você pode voltar para a etapa de Análise para responder as perguntas pendentes.")
+    
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("← Voltar para revisão", use_container_width=True):
+            st.session_state["etapa"] = "4. Revisão"
+            st.rerun()
+    with col2:
+        # Botão de geração com validação completa
+        if st.button("📄 Gerar Parecer Técnico", use_container_width=True, type="primary"):
+            # Validações rigorosas
+            if not dados["protocolo"]:
+                st.error("❌ Protocolo não informado. Volte à etapa 1 e informe o número do protocolo.")
+                st.stop()
+            
+            if not st.session_state.get("analista"):
+                st.error("❌ Nome do analista não informado. Volte à etapa 2 e preencha seus dados.")
+                st.stop()
+            
+            if not st.session_state.get("n_analise"):
+                st.error("❌ Número da análise não informado. Volte à etapa 2 e preencha o número da análise.")
+                st.stop()
+            
+            if preenchidas < total:
+                st.warning(f"⚠️ {total - preenchidas} perguntas pendentes. Deseja continuar mesmo assim?")
+                if not st.button("✅ Sim, continuar mesmo com pendências"):
+                    st.stop()
+            
+            try:
+                arquivo = gerar_docx(
+                    dados=dados,
+                    respostas=respostas,
+                    observacoes=observacoes,
+                    conclusao=conclusao,
+                    analista=st.session_state.get("analista", ""),
+                    matricula=st.session_state.get("matricula", ""),
+                    setor=st.session_state.get("setor", ""),
+                    n_analise=st.session_state.get("n_analise", "")
+                )
 
-        if not str(st.session_state.get("n_analise", "")).strip():
-            st.error("Informe o número da análise.")
-            st.stop()
+                salvar_historico(
+                    dados=dados,
+                    respostas=respostas,
+                    observacoes=observacoes,
+                    conclusao=conclusao,
+                    analista=st.session_state.get("analista", ""),
+                    n_analise=st.session_state.get("n_analise", ""),
+                    arquivo_docx=arquivo
+                )
 
-        arquivo = gerar_docx(
-            dados=dados,
-            respostas=respostas,
-            observacoes=observacoes,
-            conclusao=conclusao,
-            analista=st.session_state.get("analista", ""),
-            matricula=st.session_state.get("matricula", ""),
-            setor=st.session_state.get("setor", ""),
-            n_analise=st.session_state.get("n_analise", "")
-        )
+                protocolo_limpo = dados["protocolo"].replace("/", "-")
+                data_arquivo = datetime.now().strftime("%d-%m-%Y")
+                analise_str = f"AN{st.session_state.get('n_analise', '0')}"
+                nome_arquivo = f"PU_{protocolo_limpo}_{data_arquivo}_{analise_str}.docx"
 
-        salvar_historico(
-            dados=dados,
-            respostas=respostas,
-            observacoes=observacoes,
-            conclusao=conclusao,
-            analista=st.session_state.get("analista", ""),
-            n_analise=st.session_state.get("n_analise", ""),
-            arquivo_docx=arquivo
-        )
-
-        protocolo_limpo = dados["protocolo"].replace("/", "-")
-        data_arquivo = datetime.now().strftime("%d-%m-%Y")
-        analise_str = f"AN{st.session_state.get('n_analise', '0')}"
-        nome_arquivo = f"PU_{protocolo_limpo}_{data_arquivo}_{analise_str}.docx"
-
-        st.success("Parecer gerado e histórico salvo com sucesso.")
-        st.download_button(
-            label="⬇️ Baixar parecer (.docx)",
-            data=arquivo,
-            file_name=nome_arquivo,
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            use_container_width=True
-        )
-
-    if st.button("← Voltar para revisão", use_container_width=True):
-        st.session_state["etapa"] = "4. Revisão"
-        st.rerun()
+                st.success("✅ Parecer gerado e histórico salvo com sucesso!")
+                st.download_button(
+                    label="⬇️ Baixar parecer (.docx)",
+                    data=arquivo,
+                    file_name=nome_arquivo,
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True
+                )
+            except Exception as e:
+                st.error(f"❌ Erro ao gerar o parecer: {str(e)}")
+                st.error("Verifique se o arquivo 'modelo_parecer.docx' existe e está no formato correto.")
