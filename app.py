@@ -123,46 +123,56 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(26, 82, 118, 0.2) !important;
     }
     
-    /* CORREÇÃO COMPLETA DO DROPDOWN (CAIXA DE SELEÇÃO QUE ABRE) */
-    div[data-baseweb="popover"] {
-        background-color: white !important;
-        border: 1px solid #c5d5e6 !important;
-        border-radius: 8px !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    }
-    
-    div[data-baseweb="menu"] {
-        background-color: white !important;
-        border-radius: 8px !important;
-        padding: 4px 0 !important;
-    }
-    
-    /* Opções normais - fundo branco, texto BRANCO */
-div[data-baseweb="menu"] li {
-    background-color: #1a5276 !important;
+   /* CORREÇÃO COMPLETA DO DROPDOWN (CAIXA DE SELEÇÃO QUE ABRE) */
+div[data-baseweb="popover"] {
+    background-color: #0b1117 !important;
+    border: 1px solid #c5d5e6 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+div[data-baseweb="menu"] {
+    background-color: #0b1117 !important;
+    border-radius: 8px !important;
+    padding: 4px 0 !important;
+}
+
+/* Opções do dropdown */
+div[data-baseweb="menu"] li,
+div[data-baseweb="menu"] [role="option"] {
+    background-color: #0b1117 !important;
     color: white !important;
     padding: 8px 16px !important;
     font-size: 14px !important;
     cursor: pointer !important;
 }
 
-/* Garante que spans internos também fiquem brancos */
+/* Garante texto branco em TODOS os níveis internos */
 div[data-baseweb="menu"] li *,
-div[data-baseweb="menu"] li span {
+div[data-baseweb="menu"] li span,
+div[data-baseweb="menu"] [role="option"] *,
+div[data-baseweb="menu"] [role="option"] span {
     color: white !important;
 }
-    
-    /* HOVER / MOUSE POR CIMA - fundo azul escuro, texto BRANCO */
-    div[data-baseweb="menu"] li:hover {
-        background-color: #1a5276 !important;
-        color: white !important;
-    }
-    
-    /* Opção selecionada atualmente */
-    div[data-baseweb="menu"] li[aria-selected="true"] {
-        background-color: #0d6e2e !important;
-        color: white !important;
-    }
+
+/* Hover / foco */
+div[data-baseweb="menu"] li:hover,
+div[data-baseweb="menu"] [role="option"]:hover,
+div[data-baseweb="menu"] li:focus,
+div[data-baseweb="menu"] [role="option"]:focus,
+div[data-baseweb="menu"] li[data-highlighted="true"],
+div[data-baseweb="menu"] [role="option"][data-highlighted="true"] {
+    background-color: #2c6b96 !important;
+    color: white !important;
+    outline: none !important;
+}
+
+/* Selecionado */
+div[data-baseweb="menu"] li[aria-selected="true"],
+div[data-baseweb="menu"] [role="option"][aria-selected="true"] {
+    background-color: #1a5276 !important;
+    color: white !important;
+}
     
     /* Opção focada (navegação por teclado) */
     div[data-baseweb="menu"] li:focus,
