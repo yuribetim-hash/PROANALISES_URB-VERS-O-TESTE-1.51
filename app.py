@@ -137,14 +137,20 @@ st.markdown("""
         padding: 4px 0 !important;
     }
     
-    /* Opções normais - fundo branco, texto escuro */
-    div[data-baseweb="menu"] li {
-        background-color: white !important;
-        color: #1a1a1a !important;
-        padding: 8px 16px !important;
-        font-size: 14px !important;
-        cursor: pointer !important;
-    }
+    /* Opções normais - fundo branco, texto BRANCO */
+div[data-baseweb="menu"] li {
+    background-color: white !important;
+    color: white !important;
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+}
+
+/* Garante que spans internos também fiquem brancos */
+div[data-baseweb="menu"] li *,
+div[data-baseweb="menu"] li span {
+    color: white !important;
+}
     
     /* HOVER / MOUSE POR CIMA - fundo azul escuro, texto BRANCO */
     div[data-baseweb="menu"] li:hover {
