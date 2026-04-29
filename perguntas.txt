@@ -10,7 +10,7 @@ ID: pre_requisitos
 PERGUNTA: Rua Frontal tem domínio público e as infras necessárias?
 OPCOES: Sim;Não;Não se enquadra
 CONFORMES: Sim;Não se enquadra
-REGRA_Sim: 19.	Fica proibido o parcelamento de solo em imóveis sem frente para via pública oficial ou via sem comprovação de domínio público (Lei Federal 6.766/1979, Art. 2 e LC 418/2024). 25.	É proibido o loteamento/condomínio de lotes em: áreas fora do alcance dos equipamentos urbanos, especialmente das redes públicas de abastecimento de água potável, das redes de drenagem pluvial e de energia elétrica pública (lei 418/2024 Art. 6° inciso VI)
+REGRA_Não: 19.	Fica proibido o parcelamento de solo em imóveis sem frente para via pública oficial ou via sem comprovação de domínio público (Lei Federal 6.766/1979, Art. 2 e LC 418/2024). 25.	É proibido o loteamento/condomínio de lotes em: áreas fora do alcance dos equipamentos urbanos, especialmente das redes públicas de abastecimento de água potável, das redes de drenagem pluvial e de energia elétrica pública (lei 418/2024 Art. 6° inciso VI)
 
 GRUPO: PRÉ ANÁLISE
 ID: pre_perimetro
