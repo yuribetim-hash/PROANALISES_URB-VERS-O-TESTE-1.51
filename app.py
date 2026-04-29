@@ -11,61 +11,121 @@ st.set_page_config(
     layout="wide"
 )
 
+# CSS personalizado para fundo azul ergonômico
 st.markdown("""
 <style>
-.block-container {
-    padding-top: 1.2rem;
-    padding-bottom: 1.2rem;
-}
-.stButton > button {
-    border-radius: 8px;
-    font-weight: 600;
-}
-.small-muted {
-    color: #666;
-    font-size: 0.9rem;
-}
-.card {
-    padding: 0.8rem 1rem;
-    border: 1px solid #e6e6e6;
-    border-radius: 10px;
-    background: #fafafa;
-    margin-bottom: 0.6rem;
-}
-.progress-wrap {
-    width: 100%;
-    background: #e9ecef;
-    border-radius: 999px;
-    height: 14px;
-    overflow: hidden;
-    margin: 8px 0 4px 0;
-}
-.progress-bar {
-    height: 14px;
-    border-radius: 999px;
-    transition: width 0.3s ease;
-}
-.status-badge {
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin-top: 28px;
-    text-align: center;
-}
-.status-icon {
-    font-size: 20px;
-    display: block;
-}
-.status-text {
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-.pendencia-manual {
-    background-color: #fff3e0;
-    border-left: 4px solid #ff9800;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-}
+    /* Fundo principal da aplicação */
+    .stApp {
+        background: linear-gradient(135deg, #e8f0fe 0%, #d4e4fc 100%);
+    }
+    
+    /* Fundo dos containers principais */
+    .main > div {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        padding: 1rem;
+    }
+    
+    /* Sidebar com fundo azul mais escuro */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1a5276 0%, #1a3a5c 100%);
+    }
+    
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    [data-testid="stSidebar"] .stSelectbox label,
+    [data-testid="stSidebar"] .stRadio label {
+        color: white !important;
+    }
+    
+    [data-testid="stSidebar"] select {
+        background-color: #2c5a7a !important;
+        color: white !important;
+    }
+    
+    /* Cards de inconformidades - corrigindo contraste */
+    .card {
+        padding: 0.8rem 1rem;
+        border: 1px solid #c5d5e6;
+        border-radius: 10px;
+        background: #f8fafd !important;
+        margin-bottom: 0.6rem;
+        color: #1a1a1a !important;
+    }
+    
+    .card b, .card strong {
+        color: #1a5276 !important;
+    }
+    
+    /* Status badges */
+    .status-badge {
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-top: 28px;
+        text-align: center;
+    }
+    
+    .status-icon {
+        font-size: 20px;
+        display: block;
+    }
+    
+    .status-text {
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    /* Progress bar */
+    .progress-wrap {
+        width: 100%;
+        background: #e9ecef;
+        border-radius: 999px;
+        height: 14px;
+        overflow: hidden;
+        margin: 8px 0 4px 0;
+    }
+    
+    .progress-bar {
+        height: 14px;
+        border-radius: 999px;
+        transition: width 0.3s ease;
+    }
+    
+    /* Botões */
+    .stButton > button {
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Headers */
+    h1, h2, h3, h4 {
+        color: #1a5276 !important;
+    }
+    
+    /* Textos em geral */
+    p, li, .stMarkdown, .stText {
+        color: #2c3e50 !important;
+    }
+    
+    /* Inputs e textareas */
+    input, textarea, select {
+        background-color: white !important;
+        border: 1px solid #c5d5e6 !important;
+        border-radius: 6px !important;
+    }
+    
+    /* Informações e avisos */
+    .stInfo, .stSuccess, .stWarning, .stError {
+        border-radius: 8px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -121,10 +181,10 @@ if not st.session_state["logado"]:
 # -------------------------
 # SIDEBAR
 # -------------------------
-st.sidebar.title("Proanalisis v1.3")
+st.sidebar.title("📐 Proanalisis v1.3")
 st.sidebar.write(f"👤 {st.session_state['usuario']}")
 
-if st.sidebar.button("Sair", use_container_width=True, key="btn_sair"):
+if st.sidebar.button("🚪 Sair", use_container_width=True, key="btn_sair"):
     st.session_state["logado"] = False
     st.session_state.pop("dados_antigos", None)
     st.rerun()
@@ -270,7 +330,7 @@ def definir_conclusao(respostas, pendencias_manuais=None):
         if resposta not in conformes and resposta in p.get("regras", {}):
             return "DESFAVORÁVEL"
     
-    # Verifica pendências manuais
+    # Verifica pendências diversas (manuais)
     if pendencias_manuais:
         for grupo, pendencia in pendencias_manuais.items():
             if pendencia and pendencia.strip():
@@ -298,11 +358,11 @@ def montar_inconformidades_por_grupo(respostas, observacoes, pendencias_manuais=
                 texto += f"\nObservação: {obs}"
             grupos.setdefault(grupo, []).append(texto)
     
-    # Pendências manuais
+    # Pendências diversas
     if pendencias_manuais:
         for grupo, pendencia in pendencias_manuais.items():
             if pendencia and pendencia.strip():
-                grupos.setdefault(grupo, []).append(f"PENDÊNCIA MANUAL: {pendencia}")
+                grupos.setdefault(grupo, []).append(f"PENDÊNCIA DIVERSA: {pendencia}")
 
     return grupos
 
@@ -441,7 +501,7 @@ inicializar_estados()
 # -------------------------
 # CABEÇALHO
 # -------------------------
-st.title("Proanalisis v1.3")
+st.title("📐 Proanalisis v1.3")
 st.caption("Análise urbanística padronizada com geração de parecer técnico")
 
 etapas = [
@@ -453,7 +513,7 @@ etapas = [
 ]
 
 # Mostrar etapa atual com indicador
-etapa_atual = st.sidebar.radio("Etapas", etapas, index=etapas.index(st.session_state["etapa"]))
+etapa_atual = st.sidebar.radio("📋 Etapas", etapas, index=etapas.index(st.session_state["etapa"]))
 if etapa_atual != st.session_state["etapa"]:
     st.session_state["etapa"] = etapa_atual
     st.rerun()
@@ -462,7 +522,7 @@ if etapa_atual != st.session_state["etapa"]:
 # ETAPA 1
 # -------------------------
 if st.session_state["etapa"] == "1. Protocolo":
-    st.header("Dados do protocolo")
+    st.header("📋 Dados do protocolo")
 
     c1, c2 = st.columns([2, 1])
     with c1:
@@ -472,7 +532,7 @@ if st.session_state["etapa"] == "1. Protocolo":
     with c2:
         st.markdown("<div class='small-muted'>Use o mesmo protocolo para continuar uma análise já existente.</div>", unsafe_allow_html=True)
 
-    st.subheader("📋 Dados do empreendimento")
+    st.subheader("🏢 Dados do empreendimento")
     
     tipo = st.selectbox(
         "Tipo do Empreendimento",
@@ -581,7 +641,7 @@ elif st.session_state["etapa"] == "2. Analista":
                 st.rerun()
 
 # -------------------------
-# ETAPA 3 (VERSÃO CORRIGIDA COM STATUS VISUAL E PENDÊNCIAS MANUAIS)
+# ETAPA 3 (VERSÃO CORRIGIDA COM STATUS VISUAL E PENDÊNCIAS DIVERSAS)
 # -------------------------
 elif st.session_state["etapa"] == "3. Análise":
     st.header("🔍 Análise técnica")
@@ -659,9 +719,9 @@ elif st.session_state["etapa"] == "3. Análise":
                         inconformes_sidebar.append(p["pergunta"])
                     elif status == "na":
                         st.markdown("""
-                        <div class='status-badge' style='background-color:#eef4ff; border-left: 4px solid #175cd3;'>
+                        <div class='status-badge' style='background-color:#eef4ff; border-left: 4px solid #1a5276;'>
                             <span class='status-icon'>ℹ️</span>
-                            <div class='status-text' style='color: #175cd3;'>NÃO SE ENQUADRA</div>
+                            <div class='status-text' style='color: #1a5276;'>NÃO SE ENQUADRA</div>
                         </div>
                         """, unsafe_allow_html=True)
                     elif status == "conforme":
@@ -681,15 +741,15 @@ elif st.session_state["etapa"] == "3. Análise":
                 
                 st.markdown("---")  # Separador entre perguntas
             
-            # Campo para pendências manuais no final de cada grupo
-            st.markdown("### 📝 Pendências Manuais")
-            st.caption("Registre aqui quaisquer pendências adicionais não cobertas pelas perguntas acima")
+            # Campo para pendências diversas no final de cada grupo
+            st.markdown("### 📝 Inconformidades Diversas")
+            st.caption("Registre aqui quaisquer inconformidades adicionais não cobertas pelas perguntas acima")
             
             chave_pendencia = f"pendencia_{grupo}"
             valor_padrao_pendencia = pendencias_manuais.get(grupo, "")
             
             pendencia = st.text_area(
-                f"Pendências para o grupo: {grupo}",
+                f"Inconformidades diversas para o grupo: {grupo}",
                 value=valor_padrao_pendencia,
                 key=chave_pendencia,
                 height=80,
@@ -698,11 +758,11 @@ elif st.session_state["etapa"] == "3. Análise":
             pendencias_manuais[grupo] = pendencia
             
             if pendencia and pendencia.strip():
-                inconformes_sidebar.append(f"{grupo} - Pendência Manual")
+                inconformes_sidebar.append(f"{grupo} - Inconformidade Diversa")
             
             st.markdown("---")
 
-    # Salvar pendências manuais no session_state
+    # Salvar pendências diversas no session_state
     st.session_state["pendencias_manuais"] = pendencias_manuais
 
     preenchidas, total, pct = progresso_percentual(respostas)
@@ -732,7 +792,7 @@ elif st.session_state["etapa"] == "3. Análise":
             st.rerun()
 
 # -------------------------
-# ETAPA 4
+# ETAPA 4 (CORRIGIDA - CARDS COM CONTRASTE)
 # -------------------------
 elif st.session_state["etapa"] == "4. Revisão":
     st.header("📋 Revisão da análise")
@@ -787,7 +847,20 @@ elif st.session_state["etapa"] == "4. Revisão":
         for grupo, itens in grupos_inconformes.items():
             st.markdown(f"#### {grupo}")
             for i, item in enumerate(itens, start=1):
-                st.markdown(f"<div class='card'><b>{i}.</b> {item.replace(chr(10), '<br>')}</div>", unsafe_allow_html=True)
+                # Card com contraste melhorado e fundo claro
+                st.markdown(f"""
+                <div style="
+                    background-color: #f8fafd;
+                    border: 1px solid #c5d5e6;
+                    border-radius: 10px;
+                    padding: 12px 16px;
+                    margin: 8px 0;
+                    color: #1a1a1a;
+                ">
+                    <b style="color: #1a5276;">{i}.</b> 
+                    <span style="color: #1a1a1a;">{item.replace(chr(10), '<br>')}</span>
+                </div>
+                """, unsafe_allow_html=True)
     else:
         st.success("✅ Não foram identificadas inconformidades.")
 
@@ -823,7 +896,7 @@ elif st.session_state["etapa"] == "4. Revisão":
             st.rerun()
 
 # -------------------------
-# ETAPA 5
+# ETAPA 5 (SEM ANIMAÇÃO)
 # -------------------------
 elif st.session_state["etapa"] == "5. Gerar parecer":
     st.header("📄 Geração do parecer")
@@ -892,10 +965,10 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
         st.warning(f"⚠️ Atenção: {total - preenchidas} perguntas ainda estão pendentes. Revise antes de gerar o parecer.")
         st.info("💡 Você pode voltar para a etapa de Análise para responder as perguntas pendentes.")
     
-    # Exibir pendências manuais
+    # Exibir pendências diversas
     pendencias_registradas = {k: v for k, v in pendencias_manuais.items() if v and v.strip()}
     if pendencias_registradas:
-        st.warning("⚠️ Pendências manuais registradas:")
+        st.warning("⚠️ Inconformidades diversas registradas:")
         for grupo, pendencia in pendencias_registradas.items():
             st.markdown(f"- **{grupo}:** {pendencia}")
     
@@ -905,7 +978,7 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
             st.session_state["etapa"] = "4. Revisão"
             st.rerun()
     with col2:
-        # Botão de geração com validação completa
+        # Botão de geração com validação completa (sem animação de balloons)
         if st.button("📄 Gerar Parecer Técnico", use_container_width=True, type="primary"):
             # Validações rigorosas
             if not dados["protocolo"]:
@@ -956,7 +1029,6 @@ elif st.session_state["etapa"] == "5. Gerar parecer":
                     nome_arquivo = f"PU_{protocolo_limpo}_{data_arquivo}_{analise_str}.docx"
 
                     st.success("✅ Parecer gerado e histórico salvo com sucesso!")
-                    st.balloons()
                     
                     st.download_button(
                         label="⬇️ Baixar parecer (.docx)",
