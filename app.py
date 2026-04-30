@@ -11,6 +11,219 @@ st.set_page_config(
     layout="wide"
 )
 
+# Injetar JavaScript para garantir o estilo do dropdown
+st.markdown("""
+<script>
+// Aguarda o DOM carregar completamente
+document.addEventListener('DOMContentLoaded', function() {
+    function styleDropdowns() {
+        const dropdowns = document.querySelectorAll('[data-baseweb="menu"]');
+        dropdowns.forEach(dropdown => {
+            dropdown.style.backgroundColor = '#1a1a2e';
+            dropdown.style.border = '1px solid #2c6b96';
+            dropdown.style.borderRadius = '8px';
+            dropdown.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+            
+            const options = dropdown.querySelectorAll('[role="option"]');
+            options.forEach(option => {
+                option.style.backgroundColor = '#1a1a2e';
+                option.style.color = 'white';
+                option.style.padding = '8px 16px';
+                option.style.cursor = 'pointer';
+                
+                if (option.getAttribute('aria-selected') === 'true') {
+                    option.style.backgroundColor = '#0d6e2e';
+                }
+                
+                option.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#2c6b96';
+                    this.style.color = 'white';
+                });
+                option.addEventListener('mouseleave', function() {
+                    if (this.getAttribute('aria-selected') === 'true') {
+                        this.style.backgroundColor = '#0d6e2e';
+                    } else {
+                        this.style.backgroundColor = '#1a1a2e';
+                    }
+                    this.style.color = 'white';
+                });
+            });
+        });
+    }
+    
+    const observer = new MutationObserver(function(mutations) {
+        styleDropdowns();
+    });
+    
+    observer.observe(document.body, { childList: true, subtree: true });
+    styleDropdowns();
+});
+</script>
+""", unsafe_allow_html=True)
+
+# CSS personalizado
+st.markdown("""
+<style>
+    /* Fundo principal da aplicação */
+    .stApp {
+        background: linear-gradient(135deg, #e8f0fe 0%, #d4e4fc 100%);
+    }
+    
+    /* Fundo dos containers principais */
+    .main > div {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        padding: 1rem;
+    }
+    
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1a5276 0%, #1a3a5c 100%);
+    }
+    
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    [data-testid="stSidebar"] select {
+        background-color: #2c5a7a !important;
+        color: white !important;
+    }
+    
+    /* Campos de input */
+    .stTextInput input, .stTextArea textarea, .stNumberInput input {
+        background-color: white !important;
+        color: #1a1a1a !important;
+        border: 1px solid #c5d5e6 !important;
+        border-radius: 6px !important;
+    }
+    
+    /* Select box */
+    .stSelectbox select {
+        background-color: white !important;
+        color: #1a1a1a !important;
+        border: 1px solid #c5d5e6 !important;
+        border-radius: 6px !important;
+    }
+    
+    /* Labels */
+    .stTextInput label, .stSelectbox label, .stTextArea label, .stNumberInput label {
+        color: #1a5276 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Botões */
+    .stButton > button {
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        color: white !important;
+        border: none !important;
+    }
+    
+    .stButton > button[kind="primary"] {
+        background-color: #0d6e2e !important;
+    }
+    
+    .stButton > button:not([kind="primary"]) {
+        background-color: #1a5276 !important;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    /* Progresso */
+    .progress-wrap {
+        width: 100%;
+        background: #e9ecef;
+        border-radius: 999px;
+        height: 14px;
+        overflow: hidden;
+        margin: 8px 0;
+    }
+    
+    .progress-bar {
+        height: 14px;
+        border-radius: 999px;
+        transition: width 0.3s ease;
+    }
+    
+    /* Cards */
+    .card {
+        padding: 0.8rem 1rem;
+        border: 1px solid #c5d5e6;
+        border-radius: 10px;
+        background: #f8fafd;
+        margin-bottom: 0.6rem;
+    }
+    
+    /* Status badges */
+    .status-badge {
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-top: 28px;
+        text-align: center;
+    }
+    
+    /* DROPDOWN CSS - Fundo escuro, texto branco */
+    div[data-baseweb="menu"] {
+        background-color: #1a1a2e !important;
+        border: 1px solid #2c6b96 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
+    
+    div[data-baseweb="menu"] div {
+        background-color: #1a1a2e !important;
+        color: white !important;
+        padding: 8px 16px !important;
+    }
+    
+    div[data-baseweb="menu"] div:hover {
+        background-color: #2c6b96 !important;
+        color: white !important;
+    }
+    
+    div[data-baseweb="menu"] div[aria-selected="true"] {
+        background-color: #0d6e2e !important;
+        color: white !important;
+    }
+    
+    /* Scrollbar */
+    div[data-baseweb="menu"]::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    div[data-baseweb="menu"]::-webkit-scrollbar-track {
+        background: #2a2a3e;
+        border-radius: 4px;
+    }
+    
+    div[data-baseweb="menu"]::-webkit-scrollbar-thumb {
+        background: #2c6b96;
+        border-radius: 4px;
+    }
+    
+    hr {
+        border-color: #c5d5e6 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# [RESTANTE DO CÓDIGO IGUAL - mantenha o resto do app.py aqui]import streamlit as st
+import os
+import json
+from io import BytesIO
+from datetime import datetime
+from docxtpl import DocxTemplate, RichText
+
+st.set_page_config(
+    page_title="Proanalisis v1.3",
+    page_icon="📐",
+    layout="wide"
+)
+
 # CSS personalizado para fundo azul ergonômico com melhor contraste
 st.markdown("""
 <style>
